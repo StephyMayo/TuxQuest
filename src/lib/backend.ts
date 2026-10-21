@@ -1,7 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { MISSION_PASS_RATIO, STARTING_COINS } from "@/data/catalog";
+import { DEFAULT_LOADOUT, itemById } from "@/data/shop";
 import { QUESTION_BANK } from "@/data/questions";
-import type { Question } from "@/data/types";
+import type { ActiveBoost, Inventory, Loadout, Question, Slot } from "@/data/types";
 import type { MissionProgress } from "./missions";
 import { sha256Hex } from "./sha256";
 
@@ -10,6 +11,8 @@ export interface Player {
   username: string;
   email: string;
   coins: number;
+  /** Lo que lleva puesto: avatar, título y marco. */
+  loadout: Loadout;
 }
 
 export interface Backend {
@@ -22,10 +25,17 @@ export interface Backend {
   getQuestions(): Promise<Question[]>;
   getProgress(): Promise<Record<string, MissionProgress>>;
   spendCoins(amount: number): Promise<number>;
-  finishMission(key: string, correct: number, total: number, coins: number): Promise<number>;
+  finishMission(key: string, correct: number, total: number, coins: number, boost?: ActiveBoost | null): Promise<number>;
+  // --- Tienda y perfil ---
+  getInventory(): Promise<Inventory>;
+  buyItem(itemId: string): Promise<{ coins: number; inventory: Inventory }>;
+  equip(slot: Slot, itemId: string): Promise<Loadout>;
+  /** Gasta una unidad de un boost durante la partida. Devuelve el inventario actualizado. */
+  consumeBoost(itemId: ActiveBoost): Promise<Inventory>;
 }
 
 export class AuthError extends Error {}
+export class ShopError extends Error {}
 
 // ---------------------------------------------------------------------------
 // Supabase
@@ -72,16 +82,54 @@ const AUTH_MESSAGES: Record<string, string> = {
   "User already registered": "Ya existe una cuenta con ese correo.",
   "Email not confirmed": "Primero confirma tu correo con el enlace que te enviamos.",
 };
-const authMessage = (m: string) => AUTH_MESSAGES[m] ?? m;
+
+/** Mensajes que Supabase devuelve con texto variable: se buscan por fragmento. */
+const AUTH_PATTERNS: [RegExp, string][] = [
+  [
+    /email rate limit|over_email_send_rate_limit|rate limit exceeded/i,
+    "Se alcanzó el límite de correos de registro. Espera unos minutos e inténtalo de nuevo, o pide al administrador que configure el envío de correos.",
+  ],
+  [/for security purposes|only request this after/i, "Espera unos segundos antes de volver a intentarlo."],
+  [/password should be at least/i, "La contraseña debe tener al menos 6 caracteres."],
+  [/signups not allowed|signup is disabled/i, "El registro de cuentas nuevas está desactivado."],
+];
+
+const authMessage = (m: string) => AUTH_MESSAGES[m] ?? AUTH_PATTERNS.find(([re]) => re.test(m))?.[1] ?? m;
+
+/** Traduce los errores que lanzan las funciones de la tienda. */
+function shopMessage(m: string) {
+  if (/monedas insuficientes/i.test(m)) return "No tienes monedas suficientes.";
+  if (/ya tienes/i.test(m)) return "Ya tienes ese objeto.";
+  if (/no disponible|no existe/i.test(m)) return "Ese objeto ya no está disponible.";
+  if (/bloqueado/i.test(m)) return "Todavía no has desbloqueado ese objeto.";
+  if (/sin unidades/i.test(m)) return "No te quedan unidades de ese boost.";
+  return m;
+}
+
+interface ProfileRow {
+  id: string;
+  username: string;
+  coins: number;
+  avatar: string | null;
+  titulo: string | null;
+  marco: string | null;
+}
+
+const loadoutOf = (r: ProfileRow): Loadout => ({
+  avatar: r.avatar ?? DEFAULT_LOADOUT.avatar,
+  titulo: r.titulo ?? DEFAULT_LOADOUT.titulo,
+  marco: r.marco ?? DEFAULT_LOADOUT.marco,
+});
 
 class SupabaseBackend implements Backend {
   mode = "supabase" as const;
   constructor(private db: SupabaseClient) {}
 
   private async profile(userId: string, email: string): Promise<Player | null> {
-    const { data, error } = await this.db.from("profiles").select("id, username, coins").eq("id", userId).single();
+    const { data, error } = await this.db.from("profiles").select("id, username, coins, avatar, titulo, marco").eq("id", userId).single();
     if (error || !data) return null;
-    return { id: data.id, username: data.username, coins: data.coins, email };
+    const row = data as ProfileRow;
+    return { id: row.id, username: row.username, coins: row.coins, email, loadout: loadoutOf(row) };
   }
 
   async getPlayer() {
@@ -131,10 +179,41 @@ class SupabaseBackend implements Backend {
     return data as number;
   }
 
-  async finishMission(key: string, correct: number, total: number, coins: number) {
-    const { data, error } = await this.db.rpc("finish_mission", { p_key: key, p_correct: correct, p_total: total, p_coins: coins });
+  async finishMission(key: string, correct: number, total: number, coins: number, boost: ActiveBoost | null = null) {
+    const { data, error } = await this.db.rpc("finish_mission", {
+      p_key: key,
+      p_correct: correct,
+      p_total: total,
+      p_coins: coins,
+      p_boost: boost,
+    });
     if (error) throw error;
     return data as number;
+  }
+
+  async getInventory() {
+    const { data, error } = await this.db.from("inventory").select("item_id, qty");
+    if (error) throw error;
+    return Object.fromEntries(data.map((r) => [r.item_id as string, r.qty as number])) as Inventory;
+  }
+
+  async buyItem(itemId: string) {
+    const { data, error } = await this.db.rpc("buy_item", { p_item_id: itemId });
+    if (error) throw new ShopError(shopMessage(error.message));
+    return { coins: data as number, inventory: await this.getInventory() };
+  }
+
+  async equip(slot: Slot, itemId: string) {
+    const { data, error } = await this.db.rpc("equip_item", { p_slot: slot, p_item_id: itemId });
+    if (error) throw new ShopError(shopMessage(error.message));
+    const row = data as Loadout;
+    return { avatar: row.avatar, titulo: row.titulo, marco: row.marco };
+  }
+
+  async consumeBoost(itemId: ActiveBoost) {
+    const { error } = await this.db.rpc("consume_boost", { p_item_id: itemId });
+    if (error) throw new ShopError(shopMessage(error.message));
+    return this.getInventory();
   }
 }
 
@@ -144,6 +223,7 @@ class SupabaseBackend implements Backend {
 
 interface DemoUser extends Player {
   passwordHash: string;
+  inventory: Inventory;
 }
 
 const USERS = "tuxquest.users";
@@ -182,6 +262,8 @@ const DEMO_USER: DemoUser = {
   username: DEMO_ACCOUNT.username,
   email: DEMO_ACCOUNT.email,
   coins: 100,
+  loadout: { ...DEFAULT_LOADOUT },
+  inventory: {},
   passwordHash: "77f452e816a4198332b907a57e18b6c303d47d35d4b12a43ad4f4ea74311f2b4", // sha256("tux12345")
 };
 
@@ -190,7 +272,13 @@ class DemoBackend implements Backend {
 
   private users() {
     const users = load<Record<string, DemoUser>>(USERS, {});
-    return users[DEMO_USER.email] ? users : { ...users, [DEMO_USER.email]: DEMO_USER };
+    const all = users[DEMO_USER.email] ? users : { ...users, [DEMO_USER.email]: DEMO_USER };
+    // Las cuentas creadas antes de la tienda no traen estos campos
+    for (const u of Object.values(all)) {
+      u.loadout ??= { ...DEFAULT_LOADOUT };
+      u.inventory ??= {};
+    }
+    return all;
   }
   private current(): DemoUser | null {
     const id = load<string | null>(SESSION, null);
@@ -199,8 +287,13 @@ class DemoBackend implements Backend {
   private update(user: DemoUser) {
     save(USERS, { ...this.users(), [user.email]: user });
   }
+  private mustCurrent(): DemoUser {
+    const u = this.current();
+    if (!u) throw new ShopError("Sesión no iniciada.");
+    return u;
+  }
   private toPlayer(u: DemoUser): Player {
-    return { id: u.id, username: u.username, email: u.email, coins: u.coins };
+    return { id: u.id, username: u.username, email: u.email, coins: u.coins, loadout: { ...u.loadout } };
   }
 
   async getPlayer() {
@@ -214,7 +307,15 @@ class DemoBackend implements Backend {
     if (users[mail]) throw new AuthError("Ya existe una cuenta con ese correo.");
     if (Object.values(users).some((u) => u.username.toLowerCase() === username.toLowerCase()))
       throw new AuthError("Ese nombre de usuario ya está en uso.");
-    const user: DemoUser = { id: newId(), username, email: mail, coins: STARTING_COINS, passwordHash: await sha256(password) };
+    const user: DemoUser = {
+      id: newId(),
+      username,
+      email: mail,
+      coins: STARTING_COINS,
+      loadout: { ...DEFAULT_LOADOUT },
+      inventory: {},
+      passwordHash: await sha256(password),
+    };
     this.update(user);
     save(SESSION, user.id);
     return this.toPlayer(user);
@@ -245,17 +346,15 @@ class DemoBackend implements Backend {
   }
 
   async spendCoins(amount: number) {
-    const u = this.current();
-    if (!u) throw new Error("Sesión no iniciada.");
+    const u = this.mustCurrent();
     if (u.coins < amount) throw new Error("No tienes monedas suficientes.");
     u.coins -= amount;
     this.update(u);
     return u.coins;
   }
 
-  async finishMission(key: string, correct: number, total: number, coins: number) {
-    const u = this.current();
-    if (!u) throw new Error("Sesión no iniciada.");
+  async finishMission(key: string, correct: number, total: number, coins: number, boost: ActiveBoost | null = null) {
+    const u = this.mustCurrent();
     const all = await this.getProgress();
     const prev = all[key];
     const better = !prev || correct / total > prev.bestCorrect / prev.bestTotal;
@@ -265,9 +364,52 @@ class DemoBackend implements Backend {
       completed: (prev?.completed ?? false) || correct / total >= MISSION_PASS_RATIO,
     };
     save(progressKey(u.id), all);
-    u.coins += coins;
+    let payout = coins;
+    if (boost === "boost_monedas" && (u.inventory[boost] ?? 0) > 0) {
+      u.inventory[boost] -= 1;
+      payout *= 2;
+    }
+    u.coins += payout;
     this.update(u);
     return u.coins;
+  }
+
+  async getInventory() {
+    return { ...this.mustCurrent().inventory };
+  }
+
+  async buyItem(itemId: string) {
+    const u = this.mustCurrent();
+    const item = itemById(itemId);
+    if (!item) throw new ShopError("Ese objeto ya no está disponible.");
+    if (!item.stackable && (u.inventory[itemId] ?? 0) > 0) throw new ShopError("Ya tienes ese objeto.");
+    if (u.coins < item.price) throw new ShopError("No tienes monedas suficientes.");
+    if (item.requires) {
+      const done = Object.values(await this.getProgress()).filter((p) => p.completed).length;
+      if (done < item.requires) throw new ShopError("Todavía no has desbloqueado ese objeto.");
+    }
+    u.coins -= item.price;
+    u.inventory[itemId] = (u.inventory[itemId] ?? 0) + 1;
+    this.update(u);
+    return { coins: u.coins, inventory: { ...u.inventory } };
+  }
+
+  async equip(slot: Slot, itemId: string) {
+    const u = this.mustCurrent();
+    const item = itemById(itemId);
+    if (!item || item.kind !== slot) throw new ShopError("Ese objeto ya no está disponible.");
+    if (item.price > 0 && (u.inventory[itemId] ?? 0) === 0) throw new ShopError("Todavía no has desbloqueado ese objeto.");
+    u.loadout = { ...u.loadout, [slot]: itemId };
+    this.update(u);
+    return { ...u.loadout };
+  }
+
+  async consumeBoost(itemId: ActiveBoost) {
+    const u = this.mustCurrent();
+    if ((u.inventory[itemId] ?? 0) <= 0) throw new ShopError("No te quedan unidades de ese boost.");
+    u.inventory[itemId] -= 1;
+    this.update(u);
+    return { ...u.inventory };
   }
 }
 

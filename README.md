@@ -23,9 +23,17 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 ## Conectar Supabase
 
 1. Crea un proyecto en https://supabase.com (plan gratuito).
-2. En **SQL Editor**, ejecuta primero `supabase/schema.sql` y después `supabase/seed.sql`.
+2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql` y `supabase/shop.sql`.
+   El tercero añade la tienda, el inventario y la personalización del perfil; se puede volver a ejecutar sin romper nada.
 3. En **Authentication > Sign In / Providers > Email**, desactiva *Confirm email* mientras desarrollan
    (si lo dejas activo, el jugador debe confirmar su correo antes de iniciar sesión; la app ya muestra ese aviso).
+
+   > **«email rate limit exceeded» al registrarse.** El servidor de correo que Supabase presta gratis
+   > solo envía unos pocos mensajes por hora para todo el proyecto, y ese límite se comparte entre
+   > todas las cuentas. Si varias personas se registran seguidas, las siguientes reciben ese error.
+   > Con *Confirm email* desactivado no se envía ningún correo y el problema desaparece. Si necesitas
+   > confirmación real, configura un SMTP propio en **Authentication > Emails > SMTP Settings**
+   > (Resend o Brevo tienen planes gratuitos suficientes).
 4. Copia `.env.example` como `.env.local` y completa los datos de **Project Settings > API**:
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
@@ -63,10 +71,13 @@ src/
     registro, login     RF-01, RF-02
     jugar/              Asistente: familia → categoría → dificultad → modo (RF-03, RF-04)
     jugar/misiones      Lista de misiones y progreso (RF-06)
-    jugar/partida       Partida: retos, temporizador, pistas y corrección (RF-05, RF-07, RF-08, RF-09)
+    jugar/partida       Partida: retos, temporizador, pistas, boosts y corrección (RF-05, RF-07, RF-08, RF-09)
+    tienda              Tienda de boosts y cosméticos (RF-13)
+    perfil              Perfil del jugador y personalización (RF-14)
 supabase/
   schema.sql            Tablas, RLS y funciones (spend_coins, finish_mission)
   seed.sql              Familias, categorías y preguntas (generado)
+  shop.sql              Tienda: shop_items, inventory, buy_item, equip_item, consume_boost
 ```
 
 ## Reglas de dificultad (punto 5.3)
@@ -80,8 +91,36 @@ supabase/
 
 Una misión se marca como completada al acertar al menos el 70 % de sus retos.
 
+## Tienda y perfil (RF-13, RF-14)
+
+Las monedas que se ganan en las misiones se gastan en `/tienda`. Hay cuatro tipos de objeto:
+
+| Tipo | Qué hace |
+| --- | --- |
+| **Boosts** | Ayudas que se gastan dentro de una misión. Se pueden acumular. |
+| **Avatares** | El pingüino que aparece en el perfil y en la cabecera. |
+| **Títulos** | Texto que acompaña al nombre de usuario. |
+| **Marcos** | Color del borde de la tarjeta de perfil. |
+
+Los boosts disponibles:
+
+| Boost | Precio | Efecto |
+| --- | --- | --- |
+| Doble moneda | 25 | Duplica las monedas de la misión. Se activa desde la barra de boosts y se cobra al terminar. |
+| Tiempo extra | 15 | +15 s al reloj del reto actual (solo en Medio y Difícil). |
+| Pista gratis | 18 | Muestra la pista sin pagar, incluso en Difícil, que normalmente no tiene pistas. |
+| Escudo de Tux | 40 | Al fallar un reto aparece el botón para convertir ese fallo en acierto. |
+
+Los avatares, títulos y marcos más caros se desbloquean con misiones completadas
+(columna `requires` de `shop_items`), así que no se pueden comprar solo juntando monedas.
+
+Las compras no se validan en el navegador: el precio, el desbloqueo y el descuento de
+monedas los resuelven las funciones `buy_item()`, `equip_item()` y `consume_boost()` de
+PostgreSQL, igual que ya se hacía con `spend_coins()`. El multiplicador del boost de
+monedas se aplica dentro de `finish_mission()`, que además descuenta la unidad usada.
+
 ## Pendiente para las siguientes entregas
 
 - RF-10 y RF-11: multijugador en tiempo real con Supabase Realtime (puntaje calculado en el servidor, RNF-05).
-- RF-12 a RF-15: experiencia y niveles, tienda de skins, perfil y ranking.
+- RF-12 y RF-15: experiencia, niveles y ranking.
 - RF-16 y RF-17: panel de administración. El esquema ya incluye la columna `profiles.role` y la tabla `questions`.

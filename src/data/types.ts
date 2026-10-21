@@ -62,3 +62,36 @@ export interface DifficultyRules {
   coins: number;
   commands: string;
 }
+
+// ---------------------------------------------------------------------------
+// Tienda y personalización
+// ---------------------------------------------------------------------------
+
+/** Ranura de personalización del perfil (un item equipado por ranura). */
+export type Slot = "avatar" | "titulo" | "marco";
+export type ItemKind = Slot | "boost";
+
+export interface ShopItem {
+  id: string;
+  kind: ItemKind;
+  name: string;
+  description: string;
+  price: number;
+  /** Los boosts se gastan al usarlos, así que se pueden comprar varias veces. */
+  stackable?: boolean;
+  /** Misiones completadas que hacen falta para poder comprarlo. */
+  requires?: number;
+}
+
+/** Cuántas unidades tiene el jugador de cada item. Los cosméticos valen 1. */
+export type Inventory = Record<string, number>;
+
+/** Lo que el jugador lleva puesto. */
+export interface Loadout {
+  avatar: string;
+  titulo: string;
+  marco: string;
+}
+
+/** Boost activado para la partida en curso. */
+export type ActiveBoost = "boost_monedas" | "boost_tiempo" | "boost_pista" | "boost_escudo";

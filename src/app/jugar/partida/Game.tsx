@@ -8,7 +8,7 @@ import { correctCommand, isCorrect } from "@/lib/answer";
 import { missionsFor, pickQuestions, type Mission } from "@/lib/missions";
 import { Shell } from "@/lib/shell";
 import { Terminal, type TerminalHandle } from "@/components/Terminal";
-import { PixelBulb, PixelClock, PixelCoin, PixelFire, PixelTux, Stars, starsFor } from "@/components/Pixel";
+import { PixelBulb, PixelClock, PixelCoin, PixelFire, PixelShield, PixelTux, Stars, starsFor } from "@/components/Pixel";
 import { useGameParams } from "@/components/useGameParams";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
@@ -27,8 +27,11 @@ interface Result {
   timedOut: boolean;
 }
 
+/** Segundos que añade el boost de tiempo. */
+const TIME_BOOST = 15;
+
 export function Game() {
-  const { player, backend, setCoins } = useRequirePlayer();
+  const { player, backend, setCoins, inventory, setInventory } = useRequirePlayer();
   const { family, distro, difficulty: rules, valid, query, mission: topic } = useGameParams();
 
   const [missions, setMissions] = useState<Mission[] | null>(null);
@@ -39,8 +42,13 @@ export function Game() {
   const [feedback, setFeedback] = useState<Result | null>(null);
   const [left, setLeft] = useState<number | null>(null);
   const [hint, setHint] = useState(NO_HINT);
-  const [saved, setSaved] = useState<{ coins: number } | null>(null);
+  const [saved, setSaved] = useState<{ coins: number; doubled: boolean } | null>(null);
   const [saveError, setSaveError] = useState(false);
+  // Boosts: "x2" se activa para toda la misión, el resto se gastan al usarlos
+  const [x2, setX2] = useState(false);
+  const [boostBusy, setBoostBusy] = useState<string | null>(null);
+  const [boostError, setBoostError] = useState<string | null>(null);
+  const [shielded, setShielded] = useState(false);
   const savingRef = useRef(false);
   const termRef = useRef<TerminalHandle>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -57,6 +65,9 @@ export function Game() {
       setSaveError(false);
       setLeft(rules?.seconds ?? null);
       setHint(NO_HINT);
+      setX2(false);
+      setShielded(false);
+      setBoostError(null);
       savingRef.current = false;
     },
     [distro, rules],
@@ -111,20 +122,50 @@ export function Game() {
     if (!finished || savingRef.current || !mission || !rules) return;
     savingRef.current = true;
     const correct = results.filter((r) => r.correct).length;
+    // El servidor decide si el x2 se aplica (y lo descuenta); aquí solo avisamos.
+    const doubled = x2 && (inventory.boost_monedas ?? 0) > 0;
     backend
-      .finishMission(mission.key, correct, results.length, correct * rules.coins)
+      .finishMission(mission.key, correct, results.length, correct * rules.coins, doubled ? "boost_monedas" : null)
       .then((coins) => {
         setCoins(coins);
-        setSaved({ coins });
+        setSaved({ coins, doubled });
+        if (doubled) backend.getInventory().then(setInventory).catch(() => {});
       })
       .catch(() => setSaveError(true));
-  }, [finished, mission, rules, results, backend, setCoins]);
+  }, [finished, mission, rules, results, backend, setCoins, x2, inventory, setInventory]);
 
   function next() {
     setFeedback(null);
     setLeft(rules?.seconds ?? null);
     setHint(NO_HINT);
+    setShielded(false);
+    setBoostError(null);
     setIdx((i) => i + 1);
+  }
+
+  /** Gasta un boost en el servidor y aplica su efecto si todo salió bien. */
+  async function spendBoost(id: "boost_tiempo" | "boost_pista" | "boost_escudo", apply: () => void) {
+    if (boostBusy) return;
+    setBoostError(null);
+    setBoostBusy(id);
+    try {
+      setInventory(await backend.consumeBoost(id));
+      apply();
+    } catch (e) {
+      setBoostError(e instanceof Error ? e.message : "No se pudo usar el boost.");
+    } finally {
+      setBoostBusy(null);
+    }
+  }
+
+  /** El escudo convierte el fallo actual en acierto. */
+  function activateShield() {
+    if (!feedback || feedback.correct || shielded) return;
+    spendBoost("boost_escudo", () => {
+      setShielded(true);
+      setFeedback((f) => (f ? { ...f, correct: true } : f));
+      setResults((rs) => rs.map((r, i) => (i === rs.length - 1 ? { ...r, correct: true } : r)));
+    });
   }
 
   async function askHint() {
@@ -207,7 +248,8 @@ export function Game() {
           </dl>
           <div className="card-flat mt-6 flex items-center justify-center gap-3 p-4" aria-live="polite">
             <PixelCoin size={28} />
-            <span className="font-pixel text-sm text-accent">+{correctCount * rules!.coins}</span>
+            <span className="font-pixel text-sm text-accent">+{correctCount * rules!.coins * (saved?.doubled ? 2 : 1)}</span>
+            {saved?.doubled && <span className="chip font-pixel text-[10px] text-cyan">BOOST x2</span>}
             {saved && <span className="font-game text-lg text-muted">· total {saved.coins}</span>}
           </div>
           {saveError && <p className="mt-3 text-sm text-bad">No se pudo guardar el resultado. Revisa tu conexión.</p>}
@@ -231,6 +273,8 @@ export function Game() {
   }
 
   if (!q || !shell) return null;
+  const qty = (id: string) => inventory[id] ?? 0;
+  const hasBoosts = ["boost_monedas", "boost_tiempo", "boost_pista", "boost_escudo"].some((id) => qty(id) > 0);
   const urgent = left !== null && left <= 10;
   const timePct = left !== null && rules!.seconds ? (left / rules!.seconds) * 100 : 100;
 
@@ -266,6 +310,56 @@ export function Game() {
           )}
         </div>
       </div>
+
+      {/* Barra de boosts (solo si el jugador tiene alguno) */}
+      {hasBoosts && (
+        <div className="card-flat mt-4 flex flex-wrap items-center gap-2.5 p-3">
+          <span className="font-game text-lg text-muted">Boosts:</span>
+
+          {qty("boost_monedas") > 0 && (
+            <button
+              className={`btn btn-sm ${x2 ? "btn-primary" : "btn-ghost"}`}
+              aria-pressed={x2}
+              onClick={() => setX2((v) => !v)}
+              title="Duplica las monedas de esta misión. Se gasta al terminarla."
+            >
+              <PixelCoin size={14} /> x2 monedas {x2 ? "· ACTIVO" : `(${qty("boost_monedas")})`}
+            </button>
+          )}
+
+          {qty("boost_tiempo") > 0 && left !== null && (
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={!!feedback || boostBusy === "boost_tiempo"}
+              onClick={() => spendBoost("boost_tiempo", () => setLeft((l) => (l === null ? l : l + TIME_BOOST)))}
+            >
+              <PixelClock size={14} /> +{TIME_BOOST}s ({qty("boost_tiempo")})
+            </button>
+          )}
+
+          {qty("boost_pista") > 0 && !hint.shown && !feedback && (
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={boostBusy === "boost_pista"}
+              onClick={() => spendBoost("boost_pista", () => setHint({ shown: true, error: null, busy: false }))}
+            >
+              <PixelBulb size={14} /> Pista gratis ({qty("boost_pista")})
+            </button>
+          )}
+
+          {qty("boost_escudo") > 0 && (
+            <span className="chip font-game text-base text-cyan" title="Al fallar podrás usarlo para salvar el reto">
+              <PixelShield size={14} /> Escudo x{qty("boost_escudo")}
+            </span>
+          )}
+
+          {boostError && (
+            <span className="font-game text-base text-bad" role="alert">
+              {boostError}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Progreso de retos + tiempo */}
       <div className="mt-4 flex gap-1.5" aria-hidden="true">
@@ -345,16 +439,31 @@ export function Game() {
           <div aria-live="assertive">
             {feedback && (
               <div className={`pop mt-6 border-[3px] border-ink p-4 ${feedback.correct ? "bg-ok/15" : "bg-bad/15"}`} style={{ boxShadow: "4px 4px 0 #06030f" }}>
-                <p className={`font-pixel text-sm ${feedback.correct ? "text-ok" : "text-bad"}`}>
-                  {feedback.correct ? `¡CORRECTO! +${rules!.coins}` : feedback.timedOut ? "¡TIEMPO!" : "¡FALLASTE!"}
+                <p className={`font-pixel text-sm ${feedback.correct ? (shielded ? "text-cyan" : "text-ok") : "text-bad"}`}>
+                  {shielded
+                    ? `¡ESCUDO ACTIVADO! +${rules!.coins}`
+                    : feedback.correct
+                      ? `¡CORRECTO! +${rules!.coins}`
+                      : feedback.timedOut
+                        ? "¡TIEMPO!"
+                        : "¡FALLASTE!"}
                 </p>
-                {!feedback.correct && (
+                {(!feedback.correct || shielded) && (
                   <p className="mt-3">
                     Respuesta correcta:{" "}
                     <code className="crt inline-block border-2 border-ink px-2 font-crt text-xl text-[var(--term-text)]">{q.type === "choice" ? q.answers[0] : correctCommand(q)}</code>
                   </p>
                 )}
                 <p className="mt-2 text-muted">{q.explanation}</p>
+
+                {/* El escudo convierte este fallo en acierto */}
+                {!feedback.correct && !shielded && qty("boost_escudo") > 0 && (
+                  <button className="btn btn-cyan mt-4 w-full" disabled={boostBusy === "boost_escudo"} onClick={activateShield}>
+                    <PixelShield size={16} />
+                    {boostBusy === "boost_escudo" ? "Usando…" : `Usar Escudo de Tux (${qty("boost_escudo")}) y salvar el reto`}
+                  </button>
+                )}
+
                 <button ref={nextRef} className="btn btn-primary mt-4" onClick={next}>
                   {idx + 1 < questions.length ? "Siguiente reto ▶" : "Ver resultados ▶"}
                 </button>

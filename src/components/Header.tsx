@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { frameStyle } from "@/data/shop";
 import { useAuth } from "./AuthProvider";
-import { PixelCoin, PixelTux } from "./Pixel";
+import { PixelAvatar, PixelBag, PixelCoin, PixelTux } from "./Pixel";
 
 export function Coins({ value }: { value: number }) {
   return (
@@ -17,6 +18,7 @@ export function Coins({ value }: { value: number }) {
 export function Header() {
   const { player, loading, signOut, backend } = useAuth();
   const router = useRouter();
+  const frame = player ? frameStyle(player.loadout.marco) : null;
 
   return (
     <header className="sticky top-0 z-20 border-b-[3px] border-ink bg-bg-2/95 backdrop-blur">
@@ -39,8 +41,20 @@ export function Header() {
               <Link href="/jugar" className="btn btn-cyan btn-sm hidden sm:inline-flex">
                 ▶ Jugar
               </Link>
+              <Link href="/tienda" className="btn btn-ghost btn-sm" aria-label="Tienda">
+                <PixelBag size={16} />
+                <span className="hidden sm:inline">Tienda</span>
+              </Link>
               <Coins value={player.coins} />
-              <span className="hidden font-game text-muted md:inline">@{player.username}</span>
+              <Link href="/perfil" className="flex items-center gap-2" aria-label={`Perfil de ${player.username}`}>
+                <span
+                  className="grid shrink-0 place-items-center bg-bg-2 p-0.5"
+                  style={{ border: `2px solid ${frame!.border}`, boxShadow: `0 0 8px ${frame!.glow}` }}
+                >
+                  <PixelAvatar id={player.loadout.avatar} size={24} />
+                </span>
+                <span className="hidden font-game text-muted md:inline">@{player.username}</span>
+              </Link>
               <button
                 className="btn btn-ghost btn-sm"
                 onClick={async () => {
