@@ -30,7 +30,14 @@ export interface Mascot {
   timeout: string[];
 }
 
-const SHIRT = { cloth: "#241b47", clothDark: "#15102c" };
+/** Ropa común a todas: camisa oscura, falda, medias y tacones. */
+export const OUTFIT = {
+  shirt: "#32295f",
+  shirtLight: "#41367a",
+  skirt: "#241d4d",
+  stocking: "#1d1740",
+  stockingBand: "#4d4480",
+};
 
 export const MASCOTS: Mascot[] = [
   {
@@ -146,8 +153,6 @@ export const MASCOTS: Mascot[] = [
     timeout: ["Tiempo fuera. Ve paso a paso:", "Se acabó. Repasa esto:"],
   },
 ];
-
-export const SHIRT_COLORS = SHIRT;
 
 const BY_ID = new Map(MASCOTS.map((m) => [m.distroId, m]));
 

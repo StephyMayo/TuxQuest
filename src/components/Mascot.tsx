@@ -1,68 +1,101 @@
 /**
- * Retrato pixel art de las guías de cada distribución.
- * Todas comparten el mismo dibujo base (24x30) y se distinguen por la
+ * Guías de cada distribución: retrato de cuerpo completo en pixel art.
+ * Todas comparten el mismo dibujo base (32x67) y se distinguen por la
  * paleta de la marca y el accesorio: sombrero para la familia Red Hat,
  * prendedor en el cabello para el resto.
  */
-import { mascotFor, phraseFor, SHIRT_COLORS, type Accessory, type MascotPalette } from "@/data/mascots";
+import { mascotFor, phraseFor, OUTFIT, type Accessory, type MascotPalette } from "@/data/mascots";
 import { Sprite, type Palette } from "./Pixel";
 
-// . transparente · K contorno · H cabello · h brillo del cabello · S piel
-// E blanco del ojo · I iris · W brillo del ojo y cuello · M boca
-// C ropa · T corbata · A accesorio
+// . transparente · K contorno · H cabello · h sombra del cabello · S piel
+// E blanco del ojo · I iris · W blanco (brillo del ojo, cuello, prendedor)
+// M boca · C camisa · c brillo de la camisa · T corbata · D falda
+// L medias · l borde de las medias · R zapatos · A accesorio
 const BASE = [
-  "..........KKKKKKKK..........",
-  "........KKhhhhhhhhKK........",
-  "......KKhhHHHHHHHHhhKK......",
-  ".....KhhHHHHHHHHHHHHhhK.....",
-  "....KhhHHHHHHHHHHHHHHhhK....",
-  "....KHHHHHHHHHHHHHHHHHHK....",
-  "...KHHHHHSSSSSSSSSSHHHHHK...",
-  "...KHHHHSSSSSSSSSSSSHHHHK...",
-  "...KHHHSSSSSSSSSSSSSSHHHK...",
-  "...KHHHSSSSSSSSSSSSSSHHHK...",
-  "...KHHHSKKKKSSSSKKKKSHHHK...",
-  "...KHHHSKIWKSSSSKIWKSHHHK...",
-  "...KHHHSKIEKSSSSKIEKSHHHK...",
-  "...KHHHSSKKSSSSSSKKSSHHHK...",
-  "...KHHHSSSSSSSSSSSSSSHHHK...",
-  "...KHHHSSSSSSSSSSSSSSHHHK...",
-  "...KHHHSSSSSSMMSSSSSSHHHK...",
-  "...KHHHSSSSSSSSSSSSSSHHHK...",
-  "....KHHHSSSSSSSSSSSSHHHK....",
-  "....KHHHHSSSSSSSSSSHHHHK....",
-  "....KHHHHHSSSSSSSSHHHHHK....",
-  "...KHHHHHHHSSSSSSHHHHHHHK...",
-  "..KHHHHHHWWSSTTSSWWHHHHHHK..",
-  "..KHHHHHWWCCCTTCCCWWHHHHHK..",
-  "..KHHHHWWCCCCTTCCCCWWHHHHK..",
-  "..KHHHHCCCCCCTTCCCCCCHHHHK..",
-  "..KHHHCCCCCCCTTCCCCCCCHHHK..",
-  "..KHHHCCCCCCCTTCCCCCCCHHHK..",
-  "..KHHCCCCCCCCTTCCCCCCCCHHK..",
-  "..KHHCCCCCCCCTTCCCCCCCCHHK..",
-  "..KHHCCCCCCCCTTCCCCCCCCHHK..",
-  "..KHCCCCCCCCCCCCCCCCCCCCHK..",
-  "..KCCCCCCCCCCCCCCCCCCCCCCK..",
-  "..KKKKKKKKKKKKKKKKKKKKKKKK..",
+  "........KKKKKKKKKKKKKKKK........",
+  "......KKhhhhhhhhhhhhhhhhKK......",
+  ".....KhhHHHHHHHHHHHHHHHHhhK.....",
+  ".....KHHHHHHHHHHHHHHHHHHHHK.....",
+  "....KHHHHHHHHHHHHHHHHHHHHHHK....",
+  "....KHHHSSSSSSSSSSSSSSSSHHHK....",
+  "....KHHSSSSSSSSSSSSSSSSSSHHK....",
+  "....KHHSSSSSSSSSSSSSSSSSSHHK....",
+  "....KHHSSKKKKSSSSSSKKKKSSHHK....",
+  "....KHHSSKIWKSSSSSSKIWKSSHHK....",
+  "....KHHSSKIIKSSSSSSKIIKSSHHK....",
+  "....KHHSSKIEKSSSSSSKIEKSSHHK....",
+  "....KHHSSSKKSSSSSSSSKKSSSHHK....",
+  "....KHHSSSSSSSSSSSSSSSSSSHHK....",
+  "....KHHSSSSSSSSMMSSSSSSSSHHK....",
+  "....KHHSSSSSSSSSSSSSSSSSSHHK....",
+  "....KHHHSSSSSSSSSSSSSSSSHHHK....",
+  ".....KHHHSSSSSSSSSSSSSSHHHK.....",
+  ".....KHHHHSSSSSSSSSSSSHHHHK.....",
+  "......KHHHHSSSSSSSSSSHHHHK......",
+  ".....KHHHHHHHSSSSSSHHHHHHHK.....",
+  ".....KHHHHHHHSSSSSSHHHHHHHK.....",
+  ".....KHHKKCCCWWTTWWCCCKKHHK.....",
+  ".....KHHKKCCCCWTTWCCCCKKHHK.....",
+  ".....KHHKKCCCCCTTCCCCCKKHHK.....",
+  ".....KHHKKCCcCCTTCCcCCKKHHK.....",
+  ".....KHHKKCcCCCTTCCCcCKKHHK.....",
+  ".....KHHKKCCCCCTTCCCCCKKHHK.....",
+  ".....KHHKKCCCCCTTCCCCCKKHHK.....",
+  ".....KHHKKCCCCCTTCCCCCKKHHK.....",
+  ".....KHHK.KCCCCTTCCCCK.KHHK.....",
+  ".....KHHK..KCCCTTCCCK..KHHK.....",
+  ".....KHHK...KCCTTCCK...KHHK.....",
+  ".....KHHK...KCCTTCCK...KHHK.....",
+  ".....KHHK...KKKKKKKK...KHHK.....",
+  "......KHK..KDDDDDDDDK...KHK.....",
+  ".......KK.KDDDDDDDDDDK...KK.....",
+  ".........KDDDDDDDDDDDDK.........",
+  "........KDDDDDDDDDDDDDDK........",
+  ".......KDDDDDDDDDDDDDDDDK.......",
+  "......KDDDDDDDDDDDDDDDDDDK......",
+  "......KDDDDDDDDDDDDDDDDDDK......",
+  "......KKKKKKKKKKKKKKKKKKKK......",
+  ".........KSSSSK..KSSSSK.........",
+  ".........KSSSSK..KSSSSK.........",
+  ".........KllllK..KllllK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLLK..KLLLLK.........",
+  ".........KLLLK....KLLLK.........",
+  ".........KLLLK....KLLLK.........",
+  ".........KLLLK....KLLLK.........",
+  ".........KLLLK....KLLLK.........",
+  ".........KLLLK....KLLLK.........",
+  ".........KLLLK....KLLLK.........",
+  "..........KLLK....KLLK..........",
+  "..........KLLK....KLLK..........",
+  "..........KLLK....KLLK..........",
+  ".........KRRRK....KRRRK.........",
+  ".........KRRRK....KRRRK.........",
+  "........RRRRRR....RRRRRR........",
+  "............RR....RR............",
 ];
 
 /**
- * Sombrero de ala ancha para la familia Red Hat. Sustituye las cuatro
+ * Sombrero de ala ancha para la familia Red Hat. Sustituye las cinco
  * primeras filas del cabello para que se apoye en la cabeza y no flote.
  */
 const HAT = [
-  ".........KKKKKKKKKK.........",
-  "........KAAAAAAAAAAK........",
-  "........KAAAAAAAAAAK........",
-  ".......KAAAAAAAAAAAAK.......",
-  ".......KAAAAAAAAAAAAK.......",
-  "......KAAAAAAAAAAAAAAK......",
-  "......KAAAAAAAAAAAAAAK......",
-  "....KKKKKKKKKKKKKKKKKKKK....",
-  "..KAAAAAAAAAAAAAAAAAAAAAAK..",
-  ".KAAAAAAAAAAAAAAAAAAAAAAAAK.",
-  "..KKKKKKKKKKKKKKKKKKKKKKKK..",
+  "..........KKKKKKKKKKKK..........",
+  ".........KAAAAAAAAAAAAK.........",
+  ".........KAAAAAAAAAAAAK.........",
+  "........KAAAAAAAAAAAAAAK........",
+  "........KAAAAAAAAAAAAAAK........",
+  ".......KAAAAAAAAAAAAAAAAK.......",
+  ".....KKKKKKKKKKKKKKKKKKKKKK.....",
+  "..KAAAAAAAAAAAAAAAAAAAAAAAAAAK..",
+  ".KAAAAAAAAAAAAAAAAAAAAAAAAAAAAK.",
+  "..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..",
 ];
 
 /**
@@ -70,8 +103,8 @@ const HAT = [
  * porque el color de la marca suele ser el mismo del cabello y no se vería.
  */
 const CLIP: Record<number, string> = {
-  3: ".....KhhWWWHHHHHHHHHhhK.....",
-  4: "....KhhWWWHHHHHHHHHHHhhK....",
+  3: ".....KHHWWWHHHHHHHHHHHHHHHK.....",
+  4: "....KHHHWWWHHHHHHHHHHHHHHHHK....",
 };
 
 function mapFor(accessory: Accessory) {
@@ -87,23 +120,28 @@ function paletteFor(p: MascotPalette): Palette {
     S: "#f2c9a0",
     E: "#ffffff",
     I: p.iris,
-    M: "#c4576b",
-    C: SHIRT_COLORS.cloth,
-    c: SHIRT_COLORS.clothDark,
     W: "#f3efff",
-    T: p.accent,
+    M: "#c4576b",
+    C: OUTFIT.shirt,
+    c: OUTFIT.shirtLight,
+    D: OUTFIT.skirt,
+    L: OUTFIT.stocking,
+    l: OUTFIT.stockingBand,
+    T: p.iris,
     A: p.accent,
+    R: p.iris,
   };
 }
 
-/** Retrato de la guía de una distribución. */
+/** Retrato de cuerpo completo de la guía de una distribución. */
 export function PixelMascot({
   distroId,
-  size = 96,
+  size = 104,
   className = "",
   bob = false,
 }: {
   distroId: string;
+  /** Ancho en píxeles; el alto sale de la proporción del dibujo. */
   size?: number;
   className?: string;
   bob?: boolean;
@@ -115,14 +153,14 @@ export function PixelMascot({
       palette={paletteFor(m.palette)}
       size={size}
       className={`${bob ? "bob" : ""} ${className}`}
-      title={`${m.name}, ${m.role} de ${distroId}`}
+      title={`${m.name}, ${m.role}`}
     />
   );
 }
 
 /**
- * La guía de la distribución explicando el fallo: retrato + bocadillo.
- * El texto del reto se pasa como children.
+ * La guía de la distribución explicando el fallo: la chica de cuerpo
+ * entero a un lado y el bocadillo con el texto del reto al otro.
  */
 export function MascotTip({
   distroId,
@@ -140,8 +178,8 @@ export function MascotTip({
   const phrase = phraseFor(m, timedOut, seed);
   return (
     <div className="mt-4 flex items-start gap-3">
-      <div className="w-[76px] shrink-0 text-center">
-        <PixelMascot distroId={distroId} size={72} bob />
+      <div className="w-[92px] shrink-0 text-center sm:w-[108px]">
+        <PixelMascot distroId={distroId} size={104} bob className="mx-auto w-full" />
         <p className="mt-1 font-pixel text-[9px] leading-tight" style={{ color: m.palette.iris }}>
           {m.name.toUpperCase()}
         </p>
