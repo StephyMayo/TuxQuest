@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { DIFFICULTIES, FAMILIES, distrosOf, familyById } from "@/data/catalog";
 import type { Difficulty, FamilyId } from "@/data/types";
-import { FamilyBadge, PixelBulb, PixelClock, PixelCoin, PixelLock, PixelStar, PixelTux } from "@/components/Pixel";
+import { PixelBulb, PixelClock, PixelCoin, PixelLock, PixelStar, PixelTux } from "@/components/Pixel";
+import { DistroBadge, FamilyBadge } from "@/components/Logos";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
 const STEP_NAMES = ["Mundo", "Distro", "Dificultad", "Modo"];
@@ -82,7 +83,7 @@ export function Wizard() {
                 color={f.color}
               >
                 <span className="flex items-center gap-4">
-                  <FamilyBadge name={f.name} color={f.color} size={52} />
+                  <FamilyBadge id={f.id} name={f.name} color={f.color} size={52} />
                   <span className="flex-1">
                     <span className="block font-game text-2xl leading-none">{f.name}</span>
                     <span className="font-crt text-xl text-accent">$ {f.packageManager}</span>
@@ -106,9 +107,14 @@ export function Wizard() {
                 }}
                 color={fam.color}
               >
-                <span className="font-crt text-lg text-muted">tux@{d.hostname}:~$</span>
-                <span className="mt-1 block font-game text-2xl">{d.name}</span>
-                <span className="mt-2 block text-muted">{d.description}</span>
+                <span className="flex items-center gap-3">
+                  <DistroBadge id={d.id} familyId={d.familyId} name={d.name} color={fam.color} size={44} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-crt text-lg leading-none text-muted">tux@{d.hostname}:~$</span>
+                    <span className="mt-1 block font-game text-2xl leading-none">{d.name}</span>
+                  </span>
+                </span>
+                <span className="mt-3 block text-muted">{d.description}</span>
               </Option>
             ))}
           </div>

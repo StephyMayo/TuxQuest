@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MISSION_PASS_RATIO, MISSION_SIZE } from "@/data/catalog";
 import { missionsFor, type Mission, type MissionProgress } from "@/lib/missions";
-import { FamilyBadge, Stars, PixelTux, starsFor } from "@/components/Pixel";
+import { Stars, PixelTux, starsFor } from "@/components/Pixel";
+import { FamilyBadge } from "@/components/Logos";
+import { PixelMascot } from "@/components/Mascot";
+import { mascotFor } from "@/data/mascots";
 import { useGameParams } from "@/components/useGameParams";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
@@ -24,6 +27,8 @@ export function MissionList() {
       })
       .catch(() => setError("No se pudieron cargar las misiones. Revisa tu conexión."));
   }, [player, valid, backend, family, distro, difficulty]);
+
+  const guide = mascotFor(distro?.id ?? "");
 
   if (!player) return null;
   if (!valid)
@@ -47,13 +52,17 @@ export function MissionList() {
       </Link>
 
       <div className="card mt-6 flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
-        <FamilyBadge name={family!.name} color={family!.color} size={56} />
+        <FamilyBadge id={family!.id} name={family!.name} color={family!.color} size={56} />
         <div className="flex-1">
           <h1 className="pixel-title text-base sm:text-lg">MAPA DE MISIONES</h1>
           <p className="mt-2 font-game text-xl text-muted">
             {family!.name} › {distro!.name} › {difficulty!.name}
           </p>
+          <p className="mt-1 font-game text-lg text-muted">
+            Te acompaña <span style={{ color: guide.palette.iris }}>{guide.name}</span>, {guide.role} de {distro!.name}.
+          </p>
         </div>
+        <PixelMascot distroId={distro!.id} size={64} bob className="hidden shrink-0 sm:block" />
         {missions && (
           <div className="w-full sm:w-56">
             <div className="flex justify-between font-game text-lg">

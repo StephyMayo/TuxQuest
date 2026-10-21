@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DIFFICULTIES, FAMILIES, distrosOf } from "@/data/catalog";
-import { FamilyBadge, PixelBulb, PixelClock, PixelCoin, PixelLandscape, PixelStar, PixelTux } from "@/components/Pixel";
+import { PixelBulb, PixelClock, PixelCoin, PixelLandscape, PixelStar, PixelTux } from "@/components/Pixel";
+import { FamilyBadge } from "@/components/Logos";
 
 const STEPS = [
   ["Elige tu mundo", "Debian, Arch, Red Hat o SUSE."],
@@ -109,7 +110,7 @@ export default function Home() {
             {FAMILIES.map((f) => (
               <article key={f.id} className="card flex flex-col p-5">
                 <div className="flex items-center gap-3">
-                  <FamilyBadge name={f.name} color={f.color} />
+                  <FamilyBadge id={f.id} name={f.name} color={f.color} />
                   <div>
                     <h3 className="text-2xl font-semibold leading-none">{f.name}</h3>
                     <span className="font-crt text-xl text-accent">{f.packageManager}</span>

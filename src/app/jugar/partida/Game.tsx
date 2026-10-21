@@ -11,6 +11,7 @@ import { Terminal, type TerminalHandle } from "@/components/Terminal";
 import { PixelBulb, PixelClock, PixelCoin, PixelFire, PixelShield, PixelTux, Stars, starsFor } from "@/components/Pixel";
 import { useGameParams } from "@/components/useGameParams";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
+import { MascotTip } from "@/components/Mascot";
 
 const TYPE_LABEL: Record<ChallengeType, string> = {
   choice: "Opción múltiple",
@@ -454,7 +455,14 @@ export function Game() {
                     <code className="crt inline-block border-2 border-ink px-2 font-crt text-xl text-[var(--term-text)]">{q.type === "choice" ? q.answers[0] : correctCommand(q)}</code>
                   </p>
                 )}
-                <p className="mt-2 text-muted">{q.explanation}</p>
+                {/* Al fallar, la guía de la distribución explica el error */}
+                {!feedback.correct || shielded ? (
+                  <MascotTip distroId={distro!.id} timedOut={feedback.timedOut} seed={idx}>
+                    {q.explanation}
+                  </MascotTip>
+                ) : (
+                  <p className="mt-2 text-muted">{q.explanation}</p>
+                )}
 
                 {/* El escudo convierte este fallo en acierto */}
                 {!feedback.correct && !shielded && qty("boost_escudo") > 0 && (

@@ -65,7 +65,7 @@ src/
     answer.ts           Corrector (normaliza espacios, comillas y el orden de opciones: ls -la == ls -al)
     missions.ts         Arma las misiones por tema y elige las preguntas de cada partida
     backend.ts          Capa de datos: Supabase o modo demo
-  components/           Terminal, cabecera, formularios, sesión
+  components/           Terminal, cabecera, formularios, sesión, logos y guías
   app/
     page.tsx            Inicio
     registro, login     RF-01, RF-02
@@ -118,6 +118,29 @@ Las compras no se validan en el navegador: el precio, el desbloqueo y el descuen
 monedas los resuelven las funciones `buy_item()`, `equip_item()` y `consume_boost()` de
 PostgreSQL, igual que ya se hacía con `spend_coins()`. El multiplicador del boost de
 monedas se aplica dentro de `finish_mission()`, que además descuenta la unidad usada.
+
+## Guías de cada distribución
+
+Cada distribución tiene una guía: un personaje en pixel art que aparece al fallar un
+reto para explicar el error con sus propias palabras, además de la explicación de la
+pregunta. También se presenta en el mapa de misiones.
+
+Las doce comparten un mismo dibujo de 28×34 píxeles y se diferencian por la paleta de
+la marca y el accesorio: la familia Red Hat lleva sombrero y el resto un prendedor en
+el cabello. Están definidas en `src/data/mascots.ts` (nombre, paleta y frases) y se
+dibujan en `src/components/Mascot.tsx`.
+
+Las frases se eligen con el índice del reto, no al azar, para que el texto no cambie
+entre el servidor y el navegador.
+
+## Logos
+
+Los logos de familias y distribuciones son versiones simplificadas en pixel art de
+16×16, dibujadas con el mismo sistema de mapas de caracteres que el resto de sprites
+(`src/components/Logos.tsx`). No se descarga ninguna imagen externa.
+
+Son recreaciones aproximadas para uso educativo; las marcas pertenecen a sus
+respectivos proyectos.
 
 ## Pendiente para las siguientes entregas
 

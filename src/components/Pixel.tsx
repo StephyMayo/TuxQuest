@@ -1,8 +1,8 @@
 /** Sprites pixel art dibujados en SVG a partir de mapas de caracteres. */
 
-type Palette = Record<string, string>;
+export type Palette = Record<string, string>;
 
-function Sprite({ map, palette, size, className = "", title }: { map: string[]; palette: Palette; size: number; className?: string; title?: string }) {
+export function Sprite({ map, palette, size, className = "", title }: { map: string[]; palette: Palette; size: number; className?: string; title?: string }) {
   const w = map[0].length;
   const h = map.length;
   const rects: React.ReactNode[] = [];
@@ -132,18 +132,6 @@ export function PixelLandscape({ className = "" }: { className?: string }) {
   );
 }
 
-/** Insignia pixel de familia con su inicial. */
-export function FamilyBadge({ name, color, size = 44 }: { name: string; color: string; size?: number }) {
-  return (
-    <span
-      className="grid shrink-0 place-items-center border-[3px] border-ink font-pixel text-[13px] text-white"
-      style={{ width: size, height: size, background: color, boxShadow: "inset -3px -3px 0 #00000055, inset 3px 3px 0 #ffffff40, 3px 3px 0 #06030f", textShadow: "2px 2px 0 #06030f" }}
-      aria-hidden="true"
-    >
-      {name.slice(0, 1)}
-    </span>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Avatares de la tienda: variantes del sprite de Tux (paleta + accesorios)
