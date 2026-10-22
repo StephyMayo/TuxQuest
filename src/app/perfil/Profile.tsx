@@ -95,13 +95,13 @@ export function Profile() {
         </div>
 
         <div className="relative z-10 p-5 sm:p-6">
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-            {/* el avatar hace de logo de la distro */}
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-stretch">
+            {/* el avatar hace de logo de la distro y llena el alto de la ventana */}
             <span
-              className="grid shrink-0 place-items-center bg-bg-2 p-3"
+              className="grid h-56 w-44 shrink-0 place-items-center bg-bg-2 p-3 sm:h-auto sm:w-48"
               style={{ border: `4px solid ${frame.border}`, boxShadow: `0 0 16px ${frame.glow}` }}
             >
-              <Avatar id={loadout.avatar} size={120} bob title={`Avatar de ${player.username}`} />
+              <Avatar id={loadout.avatar} stretch bob title={`Avatar de ${player.username}`} />
             </span>
 
             <dl className="min-w-0 flex-1 font-crt text-[19px] leading-tight sm:text-[21px]">
@@ -210,21 +210,28 @@ export function Profile() {
             return (
               <li
                 key={item.id}
-                className={`card flex items-center gap-4 p-4 ${equipped ? "outline-[3px] outline-offset-4 outline-accent" : ""} ${has ? "" : "opacity-60"}`}
+                className={`card flex gap-4 p-4 ${
+                  // los avatares se ven en vertical y en grande; títulos y marcos en fila
+                  slot === "avatar" ? "flex-col items-center text-center" : "items-center"
+                } ${equipped ? "outline-[3px] outline-offset-4 outline-accent" : ""} ${has ? "" : "opacity-60"}`}
               >
                 <SlotPreview slot={slot} id={item.id} name={item.name} />
-                <div className="min-w-0 flex-1">
+                <div className={slot === "avatar" ? "w-full" : "min-w-0 flex-1"}>
                   <p className="truncate font-game text-lg">{item.name}</p>
                   {has ? (
                     equipped ? (
                       <p className="font-pixel text-[10px] text-ok">EQUIPADO</p>
                     ) : (
-                      <button className="btn btn-ghost btn-sm mt-1" disabled={busy === item.id} onClick={() => equip(item.id)}>
+                      <button
+                        className={`btn btn-ghost btn-sm mt-1 ${slot === "avatar" ? "w-full" : ""}`}
+                        disabled={busy === item.id}
+                        onClick={() => equip(item.id)}
+                      >
                         {busy === item.id ? "…" : "Equipar"}
                       </button>
                     )
                   ) : (
-                    <p className="flex items-center gap-1.5 text-sm text-muted">
+                    <p className={`flex items-center gap-1.5 text-sm text-muted ${slot === "avatar" ? "justify-center" : ""}`}>
                       <PixelLock size={14} /> {item.price} monedas en la tienda
                     </p>
                   )}
@@ -239,7 +246,7 @@ export function Profile() {
 }
 
 function SlotPreview({ slot, id, name }: { slot: Slot; id: string; name: string }) {
-  if (slot === "avatar") return <Avatar id={id} size={48} className="shrink-0" />;
+  if (slot === "avatar") return <Avatar id={id} size={128} className="shrink-0" />;
   if (slot === "titulo")
     return (
       <span className="grid h-12 w-12 shrink-0 place-items-center border-[3px] border-ink bg-bg-2 font-pixel text-[13px] text-accent" aria-hidden="true">
