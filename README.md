@@ -52,6 +52,7 @@ En Vercel, agrega esas mismas dos variables en **Settings > Environment Variable
 | `npm run dev` | Servidor de desarrollo |
 | `npm run build` / `npm start` | Compilación y servidor de producción |
 | `npm run lint` | ESLint |
+| `npm run check:imagenes` | Comprueba que los avatares del catálogo existan y midan lo que dicen |
 | `npm run check:preguntas` | Verifica que cada respuesta correcta sea aceptada por el corrector y se ejecute sin error en la terminal simulada de cada distribución |
 | `npm run seed` | Regenera `supabase/seed.sql` desde el banco de preguntas local |
 

@@ -80,7 +80,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Escudero verde",
     description: "Pequeño, con casco y bastón. Todo el mundo empieza así.",
     price: 120,
-    image: { src: "/avatares/av_escudero.png", w: 197, h: 240 },
+    image: { src: "/avatares/av_escudero.webp", w: 197, h: 240 },
   },
   {
     id: "av_marine",
@@ -88,7 +88,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Marine orbital",
     description: "Armadura blanca y rifle. Despliegue limpio, salida limpia.",
     price: 150,
-    image: { src: "/avatares/av_marine.png", w: 175, h: 240 },
+    image: { src: "/avatares/av_marine.webp", w: 175, h: 240 },
   },
   {
     id: "av_guardia",
@@ -96,7 +96,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Guardia dorada",
     description: "De guardia en el puerto 22, turno de noche.",
     price: 170, requires: 1,
-    image: { src: "/avatares/av_guardia.png", w: 165, h: 240 },
+    image: { src: "/avatares/av_guardia.webp", w: 165, h: 240 },
   },
   {
     id: "av_automata",
@@ -104,7 +104,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Autómata oxidado",
     description: "Lleva décadas funcionando. Nadie recuerda quién lo compiló.",
     price: 200, requires: 2,
-    image: { src: "/avatares/av_automata.png", w: 241, h: 240 },
+    image: { src: "/avatares/av_automata.webp", w: 241, h: 240 },
   },
   {
     id: "av_dagas",
@@ -112,7 +112,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Dagas gemelas",
     description: "Dos filos, dos terminales abiertas.",
     price: 220, requires: 3,
-    image: { src: "/avatares/av_dagas.png", w: 172, h: 240 },
+    image: { src: "/avatares/av_dagas.webp", w: 172, h: 240 },
   },
   {
     id: "av_orco",
@@ -120,7 +120,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Orco martillador",
     description: "Su respuesta a cualquier error es volver a compilar.",
     price: 240, requires: 3,
-    image: { src: "/avatares/av_orco.png", w: 218, h: 240 },
+    image: { src: "/avatares/av_orco.webp", w: 218, h: 240 },
   },
   {
     id: "av_barbaro",
@@ -128,7 +128,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Bárbaro del log",
     description: "Lee diez mil líneas de registro sin pestañear.",
     price: 260, requires: 4,
-    image: { src: "/avatares/av_barbaro.png", w: 204, h: 240 },
+    image: { src: "/avatares/av_barbaro.webp", w: 204, h: 240 },
   },
   {
     id: "av_ninja",
@@ -136,7 +136,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Ninja de la red",
     description: "Entra por el puerto que nadie vigila.",
     price: 280, requires: 5,
-    image: { src: "/avatares/av_ninja.png", w: 187, h: 240 },
+    image: { src: "/avatares/av_ninja.webp", w: 187, h: 240 },
   },
   {
     id: "av_garras",
@@ -144,7 +144,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Garras de plasma",
     description: "Corta procesos colgados de un zarpazo.",
     price: 300, requires: 5,
-    image: { src: "/avatares/av_garras.png", w: 171, h: 240 },
+    image: { src: "/avatares/av_garras.webp", w: 171, h: 240 },
   },
   {
     id: "av_neon",
@@ -152,7 +152,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Arquera de neón",
     description: "Apunta al proceso correcto a la primera.",
     price: 320, requires: 6,
-    image: { src: "/avatares/av_neon.png", w: 146, h: 240 },
+    image: { src: "/avatares/av_neon.webp", w: 146, h: 240 },
   },
   {
     id: "av_arquera",
@@ -160,7 +160,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Arquera del bosque",
     description: "Paciente. Espera a que el servidor baje la guardia.",
     price: 340, requires: 7,
-    image: { src: "/avatares/av_arquera.png", w: 187, h: 240 },
+    image: { src: "/avatares/av_arquera.webp", w: 187, h: 240 },
   },
   {
     id: "av_maga",
@@ -168,7 +168,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Maga arcana",
     description: "Sus conjuros son alias que nadie más entiende.",
     price: 380, requires: 8,
-    image: { src: "/avatares/av_maga.png", w: 190, h: 240 },
+    image: { src: "/avatares/av_maga.webp", w: 190, h: 240 },
   },
   {
     id: "av_bruja",
@@ -176,7 +176,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Bruja del shell",
     description: "Invoca con un pipe y tres comandos encadenados.",
     price: 400, requires: 8,
-    image: { src: "/avatares/av_bruja.png", w: 182, h: 240 },
+    image: { src: "/avatares/av_bruja.webp", w: 182, h: 240 },
   },
   {
     id: "av_francotiradora",
@@ -184,7 +184,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Francotiradora",
     description: "Un disparo, un bug menos.",
     price: 430, requires: 10,
-    image: { src: "/avatares/av_francotiradora.png", w: 183, h: 240 },
+    image: { src: "/avatares/av_francotiradora.webp", w: 183, h: 240 },
   },
   {
     id: "av_trol",
@@ -192,7 +192,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Trol de root",
     description: "Vive bajo el sistema de archivos y cobra peaje.",
     price: 460, requires: 10,
-    image: { src: "/avatares/av_trol.png", w: 217, h: 240 },
+    image: { src: "/avatares/av_trol.webp", w: 217, h: 240 },
   },
   {
     id: "av_mecha",
@@ -200,7 +200,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Mecha de asalto",
     description: "Cañón, escudo y ni un solo ciclo desperdiciado.",
     price: 500, requires: 12,
-    image: { src: "/avatares/av_mecha.png", w: 236, h: 240 },
+    image: { src: "/avatares/av_mecha.webp", w: 236, h: 240 },
   },
   {
     id: "av_demonio",
@@ -208,7 +208,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Demonio del kernel",
     description: "Lo invocaron con un rm -rf y ya no se fue.",
     price: 550, requires: 14,
-    image: { src: "/avatares/av_demonio.png", w: 208, h: 240 },
+    image: { src: "/avatares/av_demonio.webp", w: 208, h: 240 },
   },
   {
     id: "av_espectro",
@@ -216,7 +216,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     name: "Caballero espectral",
     description: "Sigue rondando el servidor que apagaron en 2009.",
     price: 600, requires: 16,
-    image: { src: "/avatares/av_espectro.png", w: 223, h: 240 },
+    image: { src: "/avatares/av_espectro.webp", w: 223, h: 240 },
   },
 
   // --- Títulos ---------------------------------------------------------
