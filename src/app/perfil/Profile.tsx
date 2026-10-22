@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { KIND_HELP, KIND_LABEL, frameStyle, itemsOfKind, owns, titleText } from "@/data/shop";
+import { familyById } from "@/data/catalog";
+import { KIND_HELP, KIND_LABEL, frameStyle, itemById, itemsOfKind, owns, titleText } from "@/data/shop";
 import type { Slot } from "@/data/types";
 import { ShopError } from "@/lib/backend";
-import { PixelAvatar, PixelBag, PixelBulb, PixelClock, PixelCoin, PixelLock, PixelShield, PixelStar, starsFor } from "@/components/Pixel";
+import { PixelAvatar, PixelBag, PixelBulb, PixelClock, PixelCoin, PixelLock, PixelShield, starsFor } from "@/components/Pixel";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
 const SLOTS: Slot[] = ["avatar", "titulo", "marco"];
@@ -21,6 +22,8 @@ interface Stats {
   done: number;
   stars: number;
   played: number;
+  /** Familia donde mas misiones ha superado. */
+  family: string;
 }
 
 export function Profile() {
@@ -36,19 +39,30 @@ export function Profile() {
       .getProgress()
       .then((p) => {
         const all = Object.values(p);
+        // La clave de mision es "familia:dificultad:tema": de ahi sale
+        // en que familia ha superado mas misiones.
+        const byFamily = new Map<string, number>();
+        for (const [key, m] of Object.entries(p)) {
+          if (!m.completed) continue;
+          const fam = key.split(":")[0];
+          byFamily.set(fam, (byFamily.get(fam) ?? 0) + 1);
+        }
+        const top = [...byFamily.entries()].sort((a, b) => b[1] - a[1])[0];
         setStats({
           done: all.filter((m) => m.completed).length,
           stars: all.reduce((s, m) => s + starsFor(m.bestCorrect / m.bestTotal), 0),
           played: all.length,
+          family: top ? (familyById(top[0])?.name ?? top[0]) : "aún sin elegir",
         });
       })
-      .catch(() => setStats({ done: 0, stars: 0, played: 0 }));
+      .catch(() => setStats({ done: 0, stars: 0, played: 0, family: "—" }));
   }, [backend, player]);
 
   if (!player) return null;
   const { loadout } = player;
   const frame = frameStyle(loadout.marco);
   const boosts = itemsOfKind("boost").filter((b) => (inventory[b.id] ?? 0) > 0);
+  const boostCount = boosts.reduce((n, b) => n + (inventory[b.id] ?? 0), 0);
 
   async function equip(itemId: string) {
     setError(null);
@@ -64,29 +78,62 @@ export function Profile() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      {/* ---------- Tarjeta de perfil ---------- */}
+      {/* ---------- Ficha estilo neofetch ---------- */}
       <div
-        className="card flex flex-col items-center gap-5 p-6 text-center sm:flex-row sm:text-left"
+        className="card crt overflow-hidden"
         style={{ borderColor: frame.border, boxShadow: `inset 3px 3px 0 #ffffff14, inset -3px -3px 0 #00000040, 6px 6px 0 #06030f, 0 0 24px ${frame.glow}` }}
       >
-        <span
-          className="grid shrink-0 place-items-center bg-bg-2 p-2"
-          style={{ border: `4px solid ${frame.border}`, boxShadow: `0 0 16px ${frame.glow}` }}
-        >
-          <PixelAvatar id={loadout.avatar} size={88} bob title={`Avatar de ${player.username}`} />
-        </span>
-
-        <div className="flex-1">
-          <h1 className="pixel-title text-base sm:text-lg">@{player.username}</h1>
-          <p className="mt-2 font-game text-xl text-accent">{titleText(loadout.titulo)}</p>
-          <p className="mt-1 text-sm text-muted">{player.email}</p>
+        {/* barra de la ventana */}
+        <div className="relative z-10 flex items-center gap-2 border-b-[3px] border-ink bg-panel-2 px-3 py-2">
+          <span className="h-3 w-3 border-2 border-ink bg-bad" aria-hidden="true" />
+          <span className="h-3 w-3 border-2 border-ink bg-accent" aria-hidden="true" />
+          <span className="h-3 w-3 border-2 border-ink bg-ok" aria-hidden="true" />
+          <span className="ml-2 truncate font-crt text-lg leading-none text-muted">
+            {player.username}@tuxquest — perfil
+          </span>
         </div>
 
-        <dl className="grid w-full grid-cols-3 gap-3 sm:w-auto">
-          <Stat label="Monedas" value={String(player.coins)} icon={<PixelCoin size={16} />} />
-          <Stat label="Misiones" value={String(stats?.done ?? "—")} />
-          <Stat label="Estrellas" value={String(stats?.stars ?? "—")} icon={<PixelStar size={14} />} />
-        </dl>
+        <div className="relative z-10 p-5 sm:p-6">
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+            {/* el avatar hace de logo de la distro */}
+            <span
+              className="grid shrink-0 place-items-center bg-bg-2 p-3"
+              style={{ border: `4px solid ${frame.border}`, boxShadow: `0 0 16px ${frame.glow}` }}
+            >
+              <PixelAvatar id={loadout.avatar} size={120} bob title={`Avatar de ${player.username}`} />
+            </span>
+
+            <dl className="min-w-0 flex-1 font-crt text-[19px] leading-tight sm:text-[21px]">
+              <p className="truncate">
+                <span className="text-[var(--term-prompt)]">{player.username}</span>
+                <span className="text-muted">@</span>
+                <span className="text-[var(--term-path)]">tuxquest</span>
+              </p>
+              <p className="my-1.5 select-none overflow-hidden text-muted" aria-hidden="true">
+                {"─".repeat(60)}
+              </p>
+
+              <Line k="Título" v={titleText(loadout.titulo)} />
+              <Line k="ID" v={player.id.slice(0, 8)} />
+              <Line k="Familia" v={stats?.family ?? "…"} />
+              <Line k="Monedas" v={String(player.coins)} />
+              <Line k="Misiones" v={stats ? `${stats.done} superadas de ${stats.played} jugadas` : "…"} />
+              <Line k="Estrellas" v={stats ? `${stats.stars} de ${stats.played * 3}` : "…"} />
+              <Line k="Boosts" v={boostCount === 0 ? "ninguno" : `${boostCount} en el inventario`} />
+              <Line k="Avatar" v={itemById(loadout.avatar)?.name ?? loadout.avatar} />
+              <Line k="Marco" v={itemById(loadout.marco)?.name ?? loadout.marco} />
+              <Line k="Correo" v={player.email} />
+              <Line k="Modo" v={backend.mode === "supabase" ? "en línea" : "demo · solo este navegador"} />
+
+              {/* la fila de colores que saca neofetch al final */}
+              <div className="mt-5 flex flex-wrap justify-center gap-1.5 sm:justify-start" aria-hidden="true">
+                {["#06030f", "#ff5c6c", "#4cff8f", "#ffd23f", "#6ab8ff", "#ff5d8f", "#3be8ff", "#f3efff"].map((c) => (
+                  <span key={c} className="h-4 w-7 border-2 border-ink" style={{ background: c }} />
+                ))}
+              </div>
+            </dl>
+          </div>
+        </div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3">
@@ -210,14 +257,12 @@ function SlotPreview({ slot, id, name }: { slot: Slot; id: string; name: string 
   );
 }
 
-function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
+/** Una linea "clave: valor" de la ficha, al estilo de neofetch. */
+function Line({ k, v }: { k: string; v: string }) {
   return (
-    <div className="card-flat p-3">
-      <dt className="font-game text-sm text-muted">{label}</dt>
-      <dd className="mt-1 flex items-center justify-center gap-1.5 font-pixel text-sm sm:justify-start">
-        {icon}
-        {value}
-      </dd>
+    <div className="flex gap-2">
+      <dt className="shrink-0 text-accent">{k}</dt>
+      <dd className="min-w-0 flex-1 truncate text-[var(--term-text)]">{v}</dd>
     </div>
   );
 }
