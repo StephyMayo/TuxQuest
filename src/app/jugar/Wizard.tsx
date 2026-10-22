@@ -6,11 +6,11 @@ import { useState } from "react";
 import { DIFFICULTIES, FAMILIES, distrosOf, familyById } from "@/data/catalog";
 import type { Difficulty, FamilyId } from "@/data/types";
 import { PixelBulb, PixelClock, PixelCoin, PixelLock, PixelStar, PixelTux } from "@/components/Pixel";
-import { DistroBadge, FamilyBadge } from "@/components/Logos";
+import { FamilyBadge } from "@/components/Logos";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
-const STEP_NAMES = ["Mundo", "Distro", "Dificultad", "Modo"];
-const STEP_TITLES = ["SELECCIONA TU MUNDO", "ELIGE TU DISTRO", "ELIGE LA DIFICULTAD", "ELIGE EL MODO"];
+const STEP_NAMES = ["Mundo", "Dificultad", "Modo"];
+const STEP_TITLES = ["SELECCIONA TU MUNDO", "ELIGE LA DIFICULTAD", "ELIGE EL MODO"];
 
 export function Wizard() {
   const { player } = useRequirePlayer();
@@ -20,13 +20,12 @@ export function Wizard() {
 
   const [step, setStep] = useState(0);
   const [family, setFamily] = useState<FamilyId | null>(null);
-  const [distro, setDistro] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
 
   if (!player) return null;
 
   const fam = family ? familyById(family) : null;
-  const summary = [fam?.name, distro && distrosOf(fam!.id).find((d) => d.id === distro)?.name, difficulty && DIFFICULTIES.find((d) => d.id === difficulty)?.name].filter(Boolean);
+  const summary = [fam?.name, difficulty && DIFFICULTIES.find((d) => d.id === difficulty)?.name].filter(Boolean);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -36,17 +35,17 @@ export function Wizard() {
           <div className="flex-1">
             <p className="font-game text-2xl">¡Bienvenido, {player.username}!</p>
             <p className="text-muted">
-              Tienes <strong className="text-accent">{player.coins} monedas</strong> para empezar. ¿Primera vez? Prueba «Primeros pasos» en Ubuntu, nivel fácil.
+              Tienes <strong className="text-accent">{player.coins} monedas</strong> para empezar. ¿Primera vez? Prueba «Primeros pasos» en Debian, nivel fácil.
             </p>
           </div>
-          <Link href="/jugar/partida?familia=debian&categoria=ubuntu&dificultad=facil&mision=navegacion" className="btn btn-primary shrink-0">
+          <Link href="/jugar/partida?familia=debian&dificultad=facil&mision=navegacion" className="btn btn-primary shrink-0">
             ▶ Primera misión
           </Link>
         </div>
       )}
 
       {/* Indicador de pasos */}
-      <ol className="grid grid-cols-4 gap-2 sm:gap-3" aria-label="Pasos">
+      <ol className="grid grid-cols-3 gap-2 sm:gap-3" aria-label="Pasos">
         {STEP_NAMES.map((name, i) => (
           <li key={name}>
             <button
@@ -77,7 +76,6 @@ export function Wizard() {
                 key={f.id}
                 onClick={() => {
                   setFamily(f.id);
-                  setDistro(null);
                   setStep(1);
                 }}
                 color={f.color}
@@ -96,38 +94,14 @@ export function Wizard() {
           </div>
         )}
 
-        {step === 1 && fam && (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {distrosOf(fam.id).map((d) => (
-              <Option
-                key={d.id}
-                onClick={() => {
-                  setDistro(d.id);
-                  setStep(2);
-                }}
-                color={fam.color}
-              >
-                <span className="flex items-center gap-3">
-                  <DistroBadge id={d.id} familyId={d.familyId} name={d.name} color={fam.color} size={44} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-crt text-lg leading-none text-muted">tux@{d.hostname}:~$</span>
-                    <span className="mt-1 block font-game text-2xl leading-none">{d.name}</span>
-                  </span>
-                </span>
-                <span className="mt-3 block text-muted">{d.description}</span>
-              </Option>
-            ))}
-          </div>
-        )}
-
-        {step === 2 && (
+        {step === 1 && (
           <div className="grid gap-5 md:grid-cols-3">
             {DIFFICULTIES.map((d, i) => (
               <Option
                 key={d.id}
                 onClick={() => {
                   setDifficulty(d.id);
-                  setStep(3);
+                  setStep(2);
                 }}
                 color={["#4cff8f", "#ffd23f", "#ff5c6c"][i]}
               >
@@ -156,9 +130,9 @@ export function Wizard() {
           </div>
         )}
 
-        {step === 3 && family && distro && difficulty && (
+        {step === 2 && family && difficulty && (
           <div className="grid gap-5 sm:grid-cols-2">
-            <Option onClick={() => router.push(`/jugar/misiones?familia=${family}&categoria=${distro}&dificultad=${difficulty}`)} color="#3be8ff">
+            <Option onClick={() => router.push(`/jugar/misiones?familia=${family}&dificultad=${difficulty}`)} color="#3be8ff">
               <span className="flex items-center gap-4">
                 <PixelTux size={48} />
                 <span>

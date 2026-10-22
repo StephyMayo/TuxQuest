@@ -17,20 +17,19 @@ export interface MissionProgress {
 
 export const missionKey = (family: FamilyId, difficulty: Difficulty, topic: string) => `${family}:${difficulty}:${topic}`;
 
-/** Preguntas disponibles para una familia, distribución y dificultad (comunes + de la familia + de la distro). */
-export function poolFor(questions: Question[], family: FamilyId, distro: string, difficulty: Difficulty) {
+/**
+ * Preguntas disponibles para una familia y dificultad: las comunes más las
+ * de esa familia, incluidas las que son de una distribución concreta suya.
+ */
+export function poolFor(questions: Question[], family: FamilyId, difficulty: Difficulty) {
   return questions.filter(
-    (q) =>
-      q.active !== false &&
-      q.difficulty === difficulty &&
-      (q.familyId === null || q.familyId === family) &&
-      (q.distroId === null || q.distroId === distro),
+    (q) => q.active !== false && q.difficulty === difficulty && (q.familyId === null || q.familyId === family),
   );
 }
 
 /** Lista de misiones (RF-06): una por tema con al menos 3 preguntas, más un desafío final con todo. */
-export function missionsFor(questions: Question[], family: FamilyId, distro: string, difficulty: Difficulty): Mission[] {
-  const pool = poolFor(questions, family, distro, difficulty);
+export function missionsFor(questions: Question[], family: FamilyId, difficulty: Difficulty): Mission[] {
+  const pool = poolFor(questions, family, difficulty);
   const byTopic = new Map<Topic, Question[]>();
   for (const q of pool) byTopic.set(q.topic, [...(byTopic.get(q.topic) ?? []), q]);
 
@@ -66,11 +65,10 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Elige las preguntas de una partida: primero las propias de la distro y la familia, luego las comunes. */
-export function pickQuestions(mission: Mission, distro: string, size = MISSION_SIZE): Question[] {
-  const own = shuffle(mission.pool.filter((q) => q.distroId === distro));
-  const family = shuffle(mission.pool.filter((q) => q.familyId !== null && q.distroId === null));
+/** Elige las preguntas de una partida: primero las propias de la familia, luego las comunes. */
+export function pickQuestions(mission: Mission, size = MISSION_SIZE): Question[] {
+  const own = shuffle(mission.pool.filter((q) => q.familyId !== null));
   const common = shuffle(mission.pool.filter((q) => q.familyId === null));
-  const picked = [...own, ...family, ...common].slice(0, size);
+  const picked = [...own, ...common].slice(0, size);
   return shuffle(picked).map((q) => (q.options ? { ...q, options: shuffle(q.options) } : q));
 }

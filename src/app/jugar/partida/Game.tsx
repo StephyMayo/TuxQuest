@@ -58,7 +58,7 @@ export function Game() {
 
   const start = useCallback(
     (m: Mission) => {
-      setQuestions(pickQuestions(m, distro!.id));
+      setQuestions(pickQuestions(m));
       setIdx(0);
       setResults([]);
       setFeedback(null);
@@ -71,7 +71,7 @@ export function Game() {
       setBoostError(null);
       savingRef.current = false;
     },
-    [distro, rules],
+    [rules],
   );
 
   // Cargar preguntas y armar la partida
@@ -80,7 +80,7 @@ export function Game() {
     backend
       .getQuestions()
       .then((qs) => {
-        const ms = missionsFor(qs, family!.id, distro!.id, rules!.id);
+        const ms = missionsFor(qs, family!.id, rules!.id);
         setMissions(ms);
         const m = ms.find((x) => x.topic === topic);
         if (m) start(m);
@@ -289,7 +289,7 @@ export function Game() {
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-game text-xl leading-tight sm:text-2xl">{mission.title}</h1>
           <p className="truncate font-crt text-lg leading-none text-muted">
-            {distro!.name} · {rules!.name}
+            {family!.name} · {rules!.name}
           </p>
         </div>
         <div className="flex items-center gap-2">

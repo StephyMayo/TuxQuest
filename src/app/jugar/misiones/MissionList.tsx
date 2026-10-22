@@ -22,7 +22,7 @@ export function MissionList() {
     if (!player || !valid) return;
     Promise.all([backend.getQuestions(), backend.getProgress()])
       .then(([qs, pr]) => {
-        setMissions(missionsFor(qs, family!.id, distro!.id, difficulty!.id));
+        setMissions(missionsFor(qs, family!.id, difficulty!.id));
         setProgress(pr);
       })
       .catch(() => setError("No se pudieron cargar las misiones. Revisa tu conexión."));
@@ -56,7 +56,7 @@ export function MissionList() {
         <div className="flex-1">
           <h1 className="pixel-title text-base sm:text-lg">MAPA DE MISIONES</h1>
           <p className="mt-2 font-game text-xl text-muted">
-            {family!.name} › {distro!.name} › {difficulty!.name}
+            {family!.name} › {difficulty!.name}
           </p>
           <p className="mt-1 font-game text-lg text-muted">
             Te acompaña <span style={{ color: guide.color }}>{guide.name}</span>, {guide.role}.

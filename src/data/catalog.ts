@@ -97,7 +97,6 @@ export const MISSION_SIZE = 6;
 export const STARTING_COINS = 20;
 
 export const familyById = (id: string) => FAMILIES.find((f) => f.id === id);
-export const distroById = (id: string) => DISTROS.find((d) => d.id === id);
 export const distrosOf = (familyId: FamilyId) => DISTROS.filter((d) => d.familyId === familyId);
 export const difficultyById = (id: string) => DIFFICULTIES.find((d) => d.id === id);
 export const isDifficulty = (v: string): v is Difficulty => DIFFICULTIES.some((d) => d.id === v);

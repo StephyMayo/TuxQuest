@@ -70,7 +70,7 @@ src/
   app/
     page.tsx            Inicio
     registro, login     RF-01, RF-02
-    jugar/              Asistente: familia → categoría → dificultad → modo (RF-03, RF-04)
+    jugar/              Asistente: familia → dificultad → modo (RF-03, RF-04)
     jugar/misiones      Lista de misiones y progreso (RF-06)
     jugar/partida       Partida: retos, temporizador, pistas, boosts y corrección (RF-05, RF-07, RF-08, RF-09)
     tienda              Tienda de boosts y cosméticos (RF-13)
