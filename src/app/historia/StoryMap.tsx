@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ACTS, BOSSES, STORY, storyKey } from "@/data/story";
+import { ACTS, BOSSES, GAMES, STORY, storyKey } from "@/data/story";
 import type { MissionProgress } from "@/lib/missions";
 import { BossSprite, EnemySprite } from "@/components/story/Enemies";
 import { FamilyBadge } from "@/components/Logos";
@@ -53,7 +53,7 @@ export function StoryMap() {
             {family!.name} › {difficulty!.name}
           </p>
           <p className="mt-1 text-muted">
-            Nueve capítulos. En cada uno aprendes un grupo de comandos y los usas para defender el Núcleo.
+            Nueve capítulos, nueve minijuegos distintos. En cada uno aprendes un grupo de comandos y lo pones a prueba de otra manera.
           </p>
         </div>
         <div className="w-full sm:w-56">
@@ -127,7 +127,7 @@ export function StoryMap() {
                       {c.enemies.map((e) => (
                         <EnemySprite key={e} id={e} size={22} />
                       ))}
-                      <span className="ml-auto font-crt text-lg text-muted">{c.waves} enemigos</span>
+                      <span className="ml-auto chip font-game text-sm text-cyan">{GAMES[c.game].name}</span>
                     </div>
 
                     <div className="mt-3 flex items-center justify-between">

@@ -175,6 +175,22 @@ export class Shell {
     this.prev = this.cwd;
   }
 
+  // ---------- Consultas para el modo historia ----------
+  /** Qué hay en esa ruta, o null si no existe. */
+  peek(path: string): "dir" | "file" | null {
+    const n = this.get(this.resolve(path));
+    return n ? n.kind : null;
+  }
+  /** Ruta absoluta actual, para comprobar objetivos de navegación. */
+  get here() {
+    return this.cwd;
+  }
+  /** ¿Se ha ejecutado ya algún comando que empiece por esto? */
+  hasRun(prefix: string) {
+    const p = prefix.toLowerCase();
+    return this.history.some((h) => h.trim().toLowerCase().startsWith(p));
+  }
+
   get prompt() {
     const p = this.cwd === this.home ? "~" : this.cwd.startsWith(this.home + "/") ? "~" + this.cwd.slice(this.home.length) : this.cwd;
     return `${this.user}@${this.hostname}:${p}$`;

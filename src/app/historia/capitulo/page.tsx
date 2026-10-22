@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { Battle } from "../Battle";
+import { Chapter } from "../Chapter";
 
 export default function Page() {
   return (
     <Suspense>
-      <Battle />
+      <Chapter />
     </Suspense>
   );
 }

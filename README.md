@@ -166,27 +166,37 @@ respectivos proyectos.
 
 ## Modo historia
 
-«El Camino de la Terminal»: nueve capítulos que siguen el orden real de aprendizaje,
-agrupados en tres actos. Cada capítulo usa el mismo tema que las misiones, así que los
-comandos salen del banco de preguntas de la familia elegida.
+«El Camino de la Terminal»: nueve capítulos en tres actos que siguen el orden real de
+aprendizaje. Cada capítulo usa el mismo tema que las misiones, así que los comandos
+salen del banco de preguntas de la familia elegida.
 
-La jugabilidad es un arcade de escritura: los enemigos avanzan hacia Tux con un comando
-encima y se derriban escribiéndolo. Si uno llega, cuesta una vida; hay tres.
+Un capítulo se recorre en cuatro pasos: **la historia**, **cómo se juega**, el
+**minijuego** y el **desenlace**. Hay prólogo, dos interludios entre actos y epílogo.
 
-| Enemigo | Qué hace |
-| --- | --- |
-| Bicho | Avanza sin más. Un comando y fuera. |
-| Proceso zombi | Lento, pero hacen falta dos comandos. |
-| Fuga de memoria | Acelera cuanto más tiempo lleva vivo. |
-| Paquete roto | Al romperlo se parte en dos trozos más rápidos. |
-| Demonio huérfano | Protege al enemigo que tenga más cerca; hay que quitarlo primero. |
+**Cada capítulo tiene un minijuego distinto**, y ninguno repite los tipos de reto del
+modo solitario (opción múltiple, completar, escribir y corregir):
 
-Cuatro jefes cierran los capítulos 3, 6, 8 y 9: Kernel Panic, Bucle Infinito, Disco
-Lleno y El Root Perdido.
+| Capítulo | Minijuego | Qué se practica |
+| --- | --- | --- |
+| Despertar en /home | Terminal guiada | La shell simulada de verdad, con objetivos que se marcan solos |
+| El taller de archivos | Defensa de la terminal | Arcade: escribir el comando antes de que el enemigo llegue |
+| El almacén de paquetes | Monta el comando | Ordenar las piezas del comando; dos sobran |
+| La puerta de permisos | Candado de permisos | Rejilla rwx de 3×3, con su equivalente en octal |
+| El laberinto de datos | Sigue el rastro | Marcar las líneas que encajan con un patrón |
+| La sala de máquinas | Panel de parejas | Emparejar cada comando con lo que mide |
+| Los procesos fantasma | Sala de procesos | Cerrar con `kill` los procesos colgados sin tocar los del sistema |
+| Los servicios dormidos | Tablero de servicios | Elegir entre start, restart, enable y status |
+| El puente de red | Sigue la ruta | Diagnosticar la conexión salto a salto hasta dar con la avería |
+
+Cuatro jefes cierran capítulos, cada uno dentro de la mecánica que le toca: Kernel Panic
+es un enemigo con más vida, Bucle Infinito un proceso de la tabla, Disco Lleno el último
+servicio y El Root Perdido el otro extremo de la ruta.
 
 Los temas finales tienen pocos comandos propios (`servicios` son tres), así que los
-capítulos mezclan comandos de los anteriores como repaso: da variedad y encaja con la
-idea de ir acumulando lo aprendido. El reparto es 70 % del capítulo y 30 % de repaso.
+capítulos que tiran del banco mezclan comandos de los anteriores como repaso, 70/30.
+
+El contenido que no sale del banco de preguntas —patrones, procesos, servicios y la
+ruta de red— está en `src/data/minijuegos.ts`.
 
 El progreso se guarda con `finish_mission()`, con la clave `historia:<tema>`, así que
 no hace falta ninguna tabla nueva.
