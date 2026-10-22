@@ -72,6 +72,7 @@ src/
     page.tsx            Inicio
     registro, login     RF-01, RF-02
     jugar/              Asistente: familia → dificultad → modo (RF-03, RF-04)
+    historia/           Modo historia: mapa de capítulos y arcade de escritura
     jugar/misiones      Lista de misiones y progreso (RF-06)
     jugar/partida       Partida: retos, temporizador, pistas, boosts y corrección (RF-05, RF-07, RF-08, RF-09)
     tienda              Tienda de boosts y cosméticos (RF-13)
@@ -162,6 +163,33 @@ Los logos de familias y distribuciones son versiones simplificadas en pixel art 
 
 Son recreaciones aproximadas para uso educativo; las marcas pertenecen a sus
 respectivos proyectos.
+
+## Modo historia
+
+«El Camino de la Terminal»: nueve capítulos que siguen el orden real de aprendizaje,
+agrupados en tres actos. Cada capítulo usa el mismo tema que las misiones, así que los
+comandos salen del banco de preguntas de la familia elegida.
+
+La jugabilidad es un arcade de escritura: los enemigos avanzan hacia Tux con un comando
+encima y se derriban escribiéndolo. Si uno llega, cuesta una vida; hay tres.
+
+| Enemigo | Qué hace |
+| --- | --- |
+| Bicho | Avanza sin más. Un comando y fuera. |
+| Proceso zombi | Lento, pero hacen falta dos comandos. |
+| Fuga de memoria | Acelera cuanto más tiempo lleva vivo. |
+| Paquete roto | Al romperlo se parte en dos trozos más rápidos. |
+| Demonio huérfano | Protege al enemigo que tenga más cerca; hay que quitarlo primero. |
+
+Cuatro jefes cierran los capítulos 3, 6, 8 y 9: Kernel Panic, Bucle Infinito, Disco
+Lleno y El Root Perdido.
+
+Los temas finales tienen pocos comandos propios (`servicios` son tres), así que los
+capítulos mezclan comandos de los anteriores como repaso: da variedad y encaja con la
+idea de ir acumulando lo aprendido. El reparto es 70 % del capítulo y 30 % de repaso.
+
+El progreso se guarda con `finish_mission()`, con la clave `historia:<tema>`, así que
+no hace falta ninguna tabla nueva.
 
 ## Pendiente para las siguientes entregas
 

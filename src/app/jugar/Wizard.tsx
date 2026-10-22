@@ -131,7 +131,7 @@ export function Wizard() {
         )}
 
         {step === 2 && family && difficulty && (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <Option onClick={() => router.push(`/jugar/misiones?familia=${family}&dificultad=${difficulty}`)} color="#3be8ff">
               <span className="flex items-center gap-4">
                 <PixelTux size={48} />
@@ -142,6 +142,19 @@ export function Wizard() {
               </span>
               <span className="mt-3 block text-muted">Completa misiones a tu ritmo en la terminal simulada.</span>
               <span className="btn btn-cyan btn-sm mt-4">▶ Jugar</span>
+            </Option>
+            <Option onClick={() => router.push(`/historia?familia=${family}&dificultad=${difficulty}`)} color="#ff5d8f">
+              <span className="flex items-center gap-4">
+                <PixelTux size={48} bob />
+                <span>
+                  <span className="block font-game text-2xl">Historia</span>
+                  <span className="text-muted">9 capítulos</span>
+                </span>
+              </span>
+              <span className="mt-3 block text-muted">
+                El Camino de la Terminal: aprende los comandos defendiendo el Núcleo.
+              </span>
+              <span className="btn btn-pink btn-sm mt-4">▶ Empezar</span>
             </Option>
             <div className="card relative p-5 opacity-70" aria-disabled="true">
               <span className="flex items-center gap-4">

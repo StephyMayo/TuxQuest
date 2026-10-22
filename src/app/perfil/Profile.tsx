@@ -51,6 +51,8 @@ export function Profile() {
         for (const [key, m] of Object.entries(p)) {
           if (!m.completed) continue;
           const fam = key.split(":")[0];
+          // Las claves del modo historia son "historia:<tema>": no son familias.
+          if (!familyById(fam)) continue;
           byFamily.set(fam, (byFamily.get(fam) ?? 0) + 1);
         }
         const top = [...byFamily.entries()].sort((a, b) => b[1] - a[1])[0];
