@@ -117,16 +117,16 @@ export function Profile() {
         </div>
 
         <div className="relative z-10 p-5 sm:p-6">
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-stretch">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
             {/* el avatar hace de logo de la distro y llena el alto de la ventana */}
             <span
-              className="grid h-56 w-44 shrink-0 place-items-center bg-bg-2 p-3 sm:h-auto sm:w-48"
+              className="mx-auto grid h-56 w-44 shrink-0 place-items-center bg-bg-2 p-3 sm:mx-0 sm:h-auto sm:w-48"
               style={{ border: `4px solid ${frame.border}`, boxShadow: `0 0 16px ${frame.glow}` }}
             >
               <Avatar id={loadout.avatar} stretch bob title={`Avatar de ${player.username}`} />
             </span>
 
-            <dl className="min-w-0 flex-1 font-crt text-[19px] leading-tight sm:text-[21px]">
+            <dl className="w-full min-w-0 flex-1 font-crt text-[18px] leading-tight sm:text-[21px]">
               {editing ? (
                 <form
                   className="flex flex-wrap items-center gap-2"
@@ -183,9 +183,7 @@ export function Profile() {
               <p id="nick-ayuda" className="mt-1 font-game text-base text-muted" aria-live="polite">
                 {nameError ? <span className="text-bad">✖ {nameError}</span> : editing ? USERNAME_HELP : null}
               </p>
-              <p className="my-1.5 select-none overflow-hidden text-muted" aria-hidden="true">
-                {"─".repeat(60)}
-              </p>
+              <div className="my-2 border-t-2 border-line" aria-hidden="true" />
 
               <Line k="Título" v={titleText(loadout.titulo)} />
               <Line k="ID" v={player.id.slice(0, 8)} />
@@ -343,7 +341,7 @@ function Line({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex gap-2">
       <dt className="shrink-0 text-accent">{k}</dt>
-      <dd className="min-w-0 flex-1 truncate text-[var(--term-text)]">{v}</dd>
+      <dd className="min-w-0 flex-1 break-words text-[var(--term-text)]">{v}</dd>
     </div>
   );
 }
