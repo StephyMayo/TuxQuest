@@ -30,13 +30,14 @@ export interface Mascot {
   timeout: string[];
 }
 
-/** Ropa común a todas: camisa oscura, falda, medias y tacones. */
+/** Ropa común a todas: top corto, minifalda y botas. */
 export const OUTFIT = {
-  shirt: "#32295f",
-  shirtLight: "#41367a",
-  skirt: "#241d4d",
-  stocking: "#1d1740",
-  stockingBand: "#4d4480",
+  top: "#f3efff",
+  skirt: "#2b2358",
+  skirtTrim: "#4a3f8f",
+  boot: "#1a1430",
+  skin: "#f2c9a0",
+  skinShade: "#d9a87c",
 };
 
 export const MASCOTS: Mascot[] = [

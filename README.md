@@ -125,7 +125,7 @@ Cada distribución tiene una guía: un personaje en pixel art que aparece al fal
 reto para explicar el error con sus propias palabras, además de la explicación de la
 pregunta. También se presenta en el mapa de misiones.
 
-Las doce comparten un mismo dibujo de cuerpo entero de 32×67 píxeles y se diferencian por la paleta de
+Las doce comparten un mismo dibujo de cuerpo entero de 40×89 píxeles y se diferencian por la paleta de
 la marca y el accesorio: la familia Red Hat lleva sombrero y el resto un prendedor en
 el cabello. Están definidas en `src/data/mascots.ts` (nombre, paleta y frases) y se
 dibujan en `src/components/Mascot.tsx`.
