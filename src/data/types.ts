@@ -81,6 +81,11 @@ export interface ShopItem {
   stackable?: boolean;
   /** Misiones completadas que hacen falta para poder comprarlo. */
   requires?: number;
+  /**
+   * Avatares dibujados como imagen en vez de sprite de píxeles.
+   * El tamaño sirve para reservar el hueco y evitar saltos al cargar.
+   */
+  image?: { src: string; w: number; h: number };
 }
 
 /** Cuántas unidades tiene el jugador de cada item. Los cosméticos valen 1. */

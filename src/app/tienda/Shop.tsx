@@ -6,6 +6,7 @@ import { KIND_HELP, KIND_LABEL, SHOP_ORDER, frameStyle, itemsOfKind, owns } from
 import type { ItemKind, ShopItem } from "@/data/types";
 import { ShopError } from "@/lib/backend";
 import { PixelAvatar, PixelBag, PixelBulb, PixelClock, PixelCoin, PixelLock, PixelShield, PixelTux } from "@/components/Pixel";
+import { Avatar } from "@/components/Avatar";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
 const BOOST_ICON: Record<string, React.ReactNode> = {
@@ -162,7 +163,7 @@ export function Shop() {
 /** Miniatura del objeto según su tipo. */
 function ItemPreview({ item }: { item: ShopItem }) {
   if (item.kind === "boost") return <span className="grid h-14 w-14 place-items-center">{BOOST_ICON[item.id]}</span>;
-  if (item.kind === "avatar") return <PixelAvatar id={item.id} size={56} />;
+  if (item.kind === "avatar") return <Avatar id={item.id} size={56} className="shrink-0" />;
   if (item.kind === "titulo")
     return (
       <span className="chip bg-bg-2 font-game text-base text-accent" aria-hidden="true">

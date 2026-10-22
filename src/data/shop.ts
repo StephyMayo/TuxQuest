@@ -47,6 +47,33 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "tux_rey", kind: "avatar", name: "Tux rey", description: "Corona para quien domina su distribución.", price: 200, requires: 6 },
   { id: "tux_oro", kind: "avatar", name: "Tux dorado", description: "Edición brillante. Pura presunción.", price: 350, requires: 10 },
   { id: "tux_fantasma", kind: "avatar", name: "Tux fantasma", description: "Un proceso en segundo plano que nadie puede matar.", price: 280, requires: 8 },
+  {
+    id: "av_tactica",
+    kind: "avatar",
+    name: "Operadora táctica",
+    description: "Sale a campo con el portátil en la mano. Nunca pierde la conexión.",
+    price: 400,
+    requires: 5,
+    image: { src: "/avatares/tactica.png", w: 133, h: 300 },
+  },
+  {
+    id: "av_exploradora",
+    kind: "avatar",
+    name: "Exploradora",
+    description: "Se mueve por el sistema de archivos como por un tejado.",
+    price: 480,
+    requires: 8,
+    image: { src: "/avatares/exploradora.png", w: 171, h: 300 },
+  },
+  {
+    id: "av_infiltrada",
+    kind: "avatar",
+    name: "Infiltrada",
+    description: "Entra, hace su trabajo y no deja ni una línea en los registros.",
+    price: 550,
+    requires: 12,
+    image: { src: "/avatares/infiltrada.png", w: 147, h: 300 },
+  },
 
   // --- Títulos ---------------------------------------------------------
   { id: "titulo_novato", kind: "titulo", name: "Novato", description: "Todos empezamos escribiendo ls.", price: 0 },

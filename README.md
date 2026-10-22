@@ -23,8 +23,9 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 ## Conectar Supabase
 
 1. Crea un proyecto en https://supabase.com (plan gratuito).
-2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql` y `supabase/shop.sql`.
-   El tercero añade la tienda, el inventario y la personalización del perfil; se puede volver a ejecutar sin romper nada.
+2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
+   `supabase/shop.sql` y `supabase/avatares.sql`. Los dos últimos añaden la tienda y los
+   avatares ilustrados; los dos se pueden volver a ejecutar sin romper nada.
 3. En **Authentication > Sign In / Providers > Email**, desactiva *Confirm email* mientras desarrollan
    (si lo dejas activo, el jugador debe confirmar su correo antes de iniciar sesión; la app ya muestra ese aviso).
 
@@ -78,6 +79,7 @@ supabase/
   schema.sql            Tablas, RLS y funciones (spend_coins, finish_mission)
   seed.sql              Familias, categorías y preguntas (generado)
   shop.sql              Tienda: shop_items, inventory, buy_item, equip_item, consume_boost
+  avatares.sql          Avatares ilustrados del catálogo
 ```
 
 ## Reglas de dificultad (punto 5.3)
@@ -98,7 +100,7 @@ Las monedas que se ganan en las misiones se gastan en `/tienda`. Hay cuatro tipo
 | Tipo | Qué hace |
 | --- | --- |
 | **Boosts** | Ayudas que se gastan dentro de una misión. Se pueden acumular. |
-| **Avatares** | El pingüino que aparece en el perfil y en la cabecera. |
+| **Avatares** | La figura que aparece en el perfil y en la cabecera. |
 | **Títulos** | Texto que acompaña al nombre de usuario. |
 | **Marcos** | Color del borde de la tarjeta de perfil. |
 
@@ -113,6 +115,12 @@ Los boosts disponibles:
 
 Los avatares, títulos y marcos más caros se desbloquean con misiones completadas
 (columna `requires` de `shop_items`), así que no se pueden comprar solo juntando monedas.
+
+Hay dos clases de avatar. Los de la familia Tux son sprites dibujados con mapas de
+caracteres (`src/components/Pixel.tsx`). Los ilustrados son PNG con transparencia en
+`public/avatares/`, y se declaran con el campo `image` del objeto en `src/data/shop.ts`.
+El componente `Avatar` elige uno u otro según el objeto, y los encaja en una caja
+cuadrada para que todos ocupen lo mismo en la interfaz.
 
 Las compras no se validan en el navegador: el precio, el desbloqueo y el descuento de
 monedas los resuelven las funciones `buy_item()`, `equip_item()` y `consume_boost()` de

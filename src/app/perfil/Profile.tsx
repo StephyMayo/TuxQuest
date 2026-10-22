@@ -7,6 +7,7 @@ import { KIND_HELP, KIND_LABEL, frameStyle, itemById, itemsOfKind, owns, titleTe
 import type { Slot } from "@/data/types";
 import { ShopError } from "@/lib/backend";
 import { PixelAvatar, PixelBag, PixelBulb, PixelClock, PixelCoin, PixelLock, PixelShield, starsFor } from "@/components/Pixel";
+import { Avatar } from "@/components/Avatar";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
 const SLOTS: Slot[] = ["avatar", "titulo", "marco"];
@@ -100,7 +101,7 @@ export function Profile() {
               className="grid shrink-0 place-items-center bg-bg-2 p-3"
               style={{ border: `4px solid ${frame.border}`, boxShadow: `0 0 16px ${frame.glow}` }}
             >
-              <PixelAvatar id={loadout.avatar} size={120} bob title={`Avatar de ${player.username}`} />
+              <Avatar id={loadout.avatar} size={120} bob title={`Avatar de ${player.username}`} />
             </span>
 
             <dl className="min-w-0 flex-1 font-crt text-[19px] leading-tight sm:text-[21px]">
@@ -238,7 +239,7 @@ export function Profile() {
 }
 
 function SlotPreview({ slot, id, name }: { slot: Slot; id: string; name: string }) {
-  if (slot === "avatar") return <PixelAvatar id={id} size={48} />;
+  if (slot === "avatar") return <Avatar id={id} size={48} className="shrink-0" />;
   if (slot === "titulo")
     return (
       <span className="grid h-12 w-12 shrink-0 place-items-center border-[3px] border-ink bg-bg-2 font-pixel text-[13px] text-accent" aria-hidden="true">

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { frameStyle } from "@/data/shop";
 import { useAuth } from "./AuthProvider";
-import { PixelAvatar, PixelBag, PixelCoin, PixelTux } from "./Pixel";
+import { PixelBag, PixelCoin, PixelTux } from "./Pixel";
+import { Avatar } from "./Avatar";
 
 export function Coins({ value }: { value: number }) {
   return (
@@ -51,7 +52,7 @@ export function Header() {
                   className="grid shrink-0 place-items-center bg-bg-2 p-0.5"
                   style={{ border: `2px solid ${frame!.border}`, boxShadow: `0 0 8px ${frame!.glow}` }}
                 >
-                  <PixelAvatar id={player.loadout.avatar} size={24} />
+                  <Avatar id={player.loadout.avatar} size={24} />
                 </span>
                 <span className="hidden font-game text-muted md:inline">@{player.username}</span>
               </Link>
