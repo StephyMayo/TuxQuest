@@ -24,8 +24,9 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 
 1. Crea un proyecto en https://supabase.com (plan gratuito).
 2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
-   `supabase/shop.sql` y `supabase/avatares.sql`. Los dos últimos añaden la tienda y los
-   avatares ilustrados; los dos se pueden volver a ejecutar sin romper nada.
+   `supabase/shop.sql`, `supabase/avatares.sql` y `supabase/avatares-2.sql`. Los tres
+   últimos añaden la tienda, los avatares y el cambio de nombre de usuario; todos se
+   pueden volver a ejecutar sin romper nada.
 3. En **Authentication > Sign In / Providers > Email**, desactiva *Confirm email* mientras desarrollan
    (si lo dejas activo, el jugador debe confirmar su correo antes de iniciar sesión; la app ya muestra ese aviso).
 
@@ -80,6 +81,7 @@ supabase/
   seed.sql              Familias, categorías y preguntas (generado)
   shop.sql              Tienda: shop_items, inventory, buy_item, equip_item, consume_boost
   avatares.sql          Avatares ilustrados del catálogo
+  avatares-2.sql        18 avatares más y set_username()
 ```
 
 ## Reglas de dificultad (punto 5.3)
@@ -116,11 +118,15 @@ Los boosts disponibles:
 Los avatares, títulos y marcos más caros se desbloquean con misiones completadas
 (columna `requires` de `shop_items`), así que no se pueden comprar solo juntando monedas.
 
-Hay dos clases de avatar. Los de la familia Tux son sprites dibujados con mapas de
-caracteres (`src/components/Pixel.tsx`). Los ilustrados son PNG con transparencia en
-`public/avatares/`, y se declaran con el campo `image` del objeto en `src/data/shop.ts`.
-El componente `Avatar` elige uno u otro según el objeto, y los encaja en una caja
-cuadrada para que todos ocupen lo mismo en la interfaz.
+Hay 27 avatares de dos clases. Los 6 de la familia Tux son sprites dibujados con mapas
+de caracteres (`src/components/Pixel.tsx`). Los otros 21 son imágenes con transparencia
+en `public/avatares/`, y se declaran con el campo `image` del objeto en
+`src/data/shop.ts`. El componente `Avatar` elige uno u otro según el objeto, y los
+encaja en una caja cuadrada para que todos ocupen lo mismo en la interfaz.
+
+El nombre de usuario se cambia desde el perfil. Las reglas (3 a 20 caracteres, letras,
+números o guion bajo) y la comprobación de que no esté repetido se validan en
+`set_username()`, no solo en el formulario.
 
 Las compras no se validan en el navegador: el precio, el desbloqueo y el descuento de
 monedas los resuelven las funciones `buy_item()`, `equip_item()` y `consume_boost()` de

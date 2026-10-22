@@ -32,7 +32,13 @@ export interface Backend {
   equip(slot: Slot, itemId: string): Promise<Loadout>;
   /** Gasta una unidad de un boost durante la partida. Devuelve el inventario actualizado. */
   consumeBoost(itemId: ActiveBoost): Promise<Inventory>;
+  /** Cambia el nombre de usuario. Devuelve el nombre ya guardado. */
+  setUsername(username: string): Promise<string>;
 }
+
+/** Reglas del nombre de usuario, las mismas que valida la base de datos. */
+export const USERNAME_RE = /^[A-Za-z0-9_]{3,20}$/;
+export const USERNAME_HELP = "De 3 a 20 caracteres: letras, números o guion bajo.";
 
 export class AuthError extends Error {}
 export class ShopError extends Error {}
@@ -98,6 +104,8 @@ const authMessage = (m: string) => AUTH_MESSAGES[m] ?? AUTH_PATTERNS.find(([re])
 
 /** Traduce los errores que lanzan las funciones de la tienda. */
 function shopMessage(m: string) {
+  if (/nombre no valido/i.test(m)) return USERNAME_HELP;
+  if (/nombre en uso/i.test(m)) return "Ese nombre de usuario ya está en uso.";
   if (/monedas insuficientes/i.test(m)) return "No tienes monedas suficientes.";
   if (/ya tienes/i.test(m)) return "Ya tienes ese objeto.";
   if (/no disponible|no existe/i.test(m)) return "Ese objeto ya no está disponible.";
@@ -214,6 +222,12 @@ class SupabaseBackend implements Backend {
     const { error } = await this.db.rpc("consume_boost", { p_item_id: itemId });
     if (error) throw new ShopError(shopMessage(error.message));
     return this.getInventory();
+  }
+
+  async setUsername(username: string) {
+    const { data, error } = await this.db.rpc("set_username", { p_username: username });
+    if (error) throw new ShopError(shopMessage(error.message));
+    return data as string;
   }
 }
 
@@ -382,12 +396,12 @@ class DemoBackend implements Backend {
     const u = this.mustCurrent();
     const item = itemById(itemId);
     if (!item) throw new ShopError("Ese objeto ya no está disponible.");
-    if (!item.stackable && (u.inventory[itemId] ?? 0) > 0) throw new ShopError("Ya tienes ese objeto.");
-    if (u.coins < item.price) throw new ShopError("No tienes monedas suficientes.");
     if (item.requires) {
       const done = Object.values(await this.getProgress()).filter((p) => p.completed).length;
       if (done < item.requires) throw new ShopError("Todavía no has desbloqueado ese objeto.");
     }
+    if (!item.stackable && (u.inventory[itemId] ?? 0) > 0) throw new ShopError("Ya tienes ese objeto.");
+    if (u.coins < item.price) throw new ShopError("No tienes monedas suficientes.");
     u.coins -= item.price;
     u.inventory[itemId] = (u.inventory[itemId] ?? 0) + 1;
     this.update(u);
@@ -410,6 +424,17 @@ class DemoBackend implements Backend {
     u.inventory[itemId] -= 1;
     this.update(u);
     return { ...u.inventory };
+  }
+
+  async setUsername(username: string) {
+    const u = this.mustCurrent();
+    const nombre = username.trim();
+    if (!USERNAME_RE.test(nombre)) throw new ShopError(USERNAME_HELP);
+    if (Object.values(this.users()).some((o) => o.id !== u.id && o.username.toLowerCase() === nombre.toLowerCase()))
+      throw new ShopError("Ese nombre de usuario ya está en uso.");
+    u.username = nombre;
+    this.update(u);
+    return nombre;
   }
 }
 

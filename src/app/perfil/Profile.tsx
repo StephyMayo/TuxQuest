@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { familyById } from "@/data/catalog";
 import { KIND_HELP, KIND_LABEL, frameStyle, itemById, itemsOfKind, owns, titleText } from "@/data/shop";
 import type { Slot } from "@/data/types";
-import { ShopError } from "@/lib/backend";
+import { ShopError, USERNAME_HELP } from "@/lib/backend";
 import { PixelAvatar, PixelBag, PixelBulb, PixelClock, PixelCoin, PixelLock, PixelShield, starsFor } from "@/components/Pixel";
 import { Avatar } from "@/components/Avatar";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
@@ -28,11 +28,16 @@ interface Stats {
 }
 
 export function Profile() {
-  const { player, backend, inventory, setLoadout } = useRequirePlayer();
+  const { player, backend, inventory, setLoadout, setPlayer } = useRequirePlayer();
   const [slot, setSlot] = useState<Slot>("avatar");
   const [stats, setStats] = useState<Stats | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // edición del nombre de usuario
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!player) return;
@@ -64,6 +69,21 @@ export function Profile() {
   const frame = frameStyle(loadout.marco);
   const boosts = itemsOfKind("boost").filter((b) => (inventory[b.id] ?? 0) > 0);
   const boostCount = boosts.reduce((n, b) => n + (inventory[b.id] ?? 0), 0);
+
+  async function saveName() {
+    if (!player || savingName) return;
+    setNameError(null);
+    setSavingName(true);
+    try {
+      const nombre = await backend.setUsername(draft);
+      setPlayer({ ...player, username: nombre });
+      setEditing(false);
+    } catch (e) {
+      setNameError(e instanceof ShopError ? e.message : "No se pudo guardar. Revisa tu conexión.");
+    } finally {
+      setSavingName(false);
+    }
+  }
 
   async function equip(itemId: string) {
     setError(null);
@@ -105,10 +125,61 @@ export function Profile() {
             </span>
 
             <dl className="min-w-0 flex-1 font-crt text-[19px] leading-tight sm:text-[21px]">
-              <p className="truncate">
-                <span className="text-[var(--term-prompt)]">{player.username}</span>
-                <span className="text-muted">@</span>
-                <span className="text-[var(--term-path)]">tuxquest</span>
+              {editing ? (
+                <form
+                  className="flex flex-wrap items-center gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    saveName();
+                  }}
+                >
+                  <label htmlFor="nick" className="sr-only">
+                    Nombre de usuario
+                  </label>
+                  <input
+                    id="nick"
+                    className="input w-48 font-crt text-[19px]"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    maxLength={20}
+                    autoFocus
+                    aria-describedby="nick-ayuda"
+                  />
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={savingName}>
+                    {savingName ? "…" : "Guardar"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => {
+                      setEditing(false);
+                      setNameError(null);
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </form>
+              ) : (
+                <p className="flex flex-wrap items-center gap-2">
+                  <span className="truncate">
+                    <span className="text-[var(--term-prompt)]">{player.username}</span>
+                    <span className="text-muted">@</span>
+                    <span className="text-[var(--term-path)]">tuxquest</span>
+                  </span>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => {
+                      setDraft(player.username);
+                      setNameError(null);
+                      setEditing(true);
+                    }}
+                  >
+                    ✎ Editar
+                  </button>
+                </p>
+              )}
+              <p id="nick-ayuda" className="mt-1 font-game text-base text-muted" aria-live="polite">
+                {nameError ? <span className="text-bad">✖ {nameError}</span> : editing ? USERNAME_HELP : null}
               </p>
               <p className="my-1.5 select-none overflow-hidden text-muted" aria-hidden="true">
                 {"─".repeat(60)}
