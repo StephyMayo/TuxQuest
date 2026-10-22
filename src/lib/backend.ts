@@ -11,6 +11,8 @@ export interface Player {
   username: string;
   email: string;
   coins: number;
+  /** Familia elegida a mano. null = se deduce de las misiones superadas. */
+  family: string | null;
   /** Lo que lleva puesto: avatar, título y marco. */
   loadout: Loadout;
 }
@@ -34,6 +36,13 @@ export interface Backend {
   consumeBoost(itemId: ActiveBoost): Promise<Inventory>;
   /** Cambia el nombre de usuario. Devuelve el nombre ya guardado. */
   setUsername(username: string): Promise<string>;
+  /** Fija la familia del perfil. null deja que se deduzca de lo jugado. */
+  setFamily(family: string | null): Promise<string | null>;
+  /**
+   * Pide el cambio de correo. Devuelve true si el cambio quedó hecho y false
+   * si hace falta confirmarlo desde el correo nuevo, que es lo normal.
+   */
+  setEmail(email: string): Promise<boolean>;
 }
 
 /** Reglas del nombre de usuario, las mismas que valida la base de datos. */
@@ -106,6 +115,11 @@ const authMessage = (m: string) => AUTH_MESSAGES[m] ?? AUTH_PATTERNS.find(([re])
 function shopMessage(m: string) {
   if (/nombre no valido/i.test(m)) return USERNAME_HELP;
   if (/nombre en uso/i.test(m)) return "Ese nombre de usuario ya está en uso.";
+  if (/familia no valida/i.test(m)) return "Esa familia no existe.";
+  if (/email address.*invalid|invalid email/i.test(m)) return "Ese correo no es válido.";
+  if (/already registered|already been registered/i.test(m)) return "Ya hay una cuenta con ese correo.";
+  if (/rate limit|for security purposes/i.test(m))
+    return "Se alcanzó el límite de correos. Espera unos minutos e inténtalo de nuevo.";
   if (/monedas insuficientes/i.test(m)) return "No tienes monedas suficientes.";
   if (/ya tienes/i.test(m)) return "Ya tienes ese objeto.";
   if (/no disponible|no existe/i.test(m)) return "Ese objeto ya no está disponible.";
@@ -121,6 +135,7 @@ interface ProfileRow {
   avatar: string | null;
   titulo: string | null;
   marco: string | null;
+  family: string | null;
 }
 
 const loadoutOf = (r: ProfileRow): Loadout => ({
@@ -134,10 +149,10 @@ class SupabaseBackend implements Backend {
   constructor(private db: SupabaseClient) {}
 
   private async profile(userId: string, email: string): Promise<Player | null> {
-    const { data, error } = await this.db.from("profiles").select("id, username, coins, avatar, titulo, marco").eq("id", userId).single();
+    const { data, error } = await this.db.from("profiles").select("id, username, coins, avatar, titulo, marco, family").eq("id", userId).single();
     if (error || !data) return null;
     const row = data as ProfileRow;
-    return { id: row.id, username: row.username, coins: row.coins, email, loadout: loadoutOf(row) };
+    return { id: row.id, username: row.username, coins: row.coins, email, family: row.family, loadout: loadoutOf(row) };
   }
 
   async getPlayer() {
@@ -229,6 +244,20 @@ class SupabaseBackend implements Backend {
     if (error) throw new ShopError(shopMessage(error.message));
     return data as string;
   }
+
+  async setFamily(family: string | null) {
+    const { data, error } = await this.db.rpc("set_family", { p_family: family });
+    if (error) throw new ShopError(shopMessage(error.message));
+    return (data as string | null) ?? null;
+  }
+
+  async setEmail(email: string) {
+    const { data, error } = await this.db.auth.updateUser({ email });
+    if (error) throw new ShopError(shopMessage(error.message));
+    // Supabase manda un correo de confirmación a la dirección nueva; hasta
+    // que no se pulse el enlace, la cuenta sigue con la anterior.
+    return data.user?.email?.toLowerCase() === email.trim().toLowerCase();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -276,6 +305,7 @@ const DEMO_USER: DemoUser = {
   username: DEMO_ACCOUNT.username,
   email: DEMO_ACCOUNT.email,
   coins: 100,
+  family: null,
   loadout: { ...DEFAULT_LOADOUT },
   inventory: {},
   passwordHash: "77f452e816a4198332b907a57e18b6c303d47d35d4b12a43ad4f4ea74311f2b4", // sha256("tux12345")
@@ -291,6 +321,7 @@ class DemoBackend implements Backend {
     for (const u of Object.values(all)) {
       u.loadout ??= { ...DEFAULT_LOADOUT };
       u.inventory ??= {};
+      u.family ??= null;
     }
     return all;
   }
@@ -307,7 +338,7 @@ class DemoBackend implements Backend {
     return u;
   }
   private toPlayer(u: DemoUser): Player {
-    return { id: u.id, username: u.username, email: u.email, coins: u.coins, loadout: { ...u.loadout } };
+    return { id: u.id, username: u.username, email: u.email, coins: u.coins, family: u.family, loadout: { ...u.loadout } };
   }
 
   async getPlayer() {
@@ -326,6 +357,7 @@ class DemoBackend implements Backend {
       username,
       email: mail,
       coins: STARTING_COINS,
+      family: null,
       loadout: { ...DEFAULT_LOADOUT },
       inventory: {},
       passwordHash: await sha256(password),
@@ -435,6 +467,29 @@ class DemoBackend implements Backend {
     u.username = nombre;
     this.update(u);
     return nombre;
+  }
+
+  async setFamily(family: string | null) {
+    const u = this.mustCurrent();
+    if (family !== null && !["debian", "arch", "redhat", "suse"].includes(family))
+      throw new ShopError("Esa familia no existe.");
+    u.family = family;
+    this.update(u);
+    return family;
+  }
+
+  async setEmail(email: string) {
+    const u = this.mustCurrent();
+    const mail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) throw new ShopError("Ese correo no es válido.");
+    if (Object.values(this.users()).some((o) => o.id !== u.id && o.email === mail))
+      throw new ShopError("Ya hay una cuenta con ese correo.");
+    // En demo las cuentas van por correo, así que hay que mover la entrada.
+    const users = this.users();
+    delete users[u.email];
+    u.email = mail;
+    save(USERS, { ...users, [mail]: u });
+    return true;
   }
 }
 

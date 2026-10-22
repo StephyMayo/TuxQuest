@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { familyById } from "@/data/catalog";
+import { FAMILIES, familyById } from "@/data/catalog";
 import { KIND_HELP, KIND_LABEL, frameStyle, itemById, itemsOfKind, owns, titleText } from "@/data/shop";
 import type { Slot } from "@/data/types";
 import { ShopError, USERNAME_HELP } from "@/lib/backend";
@@ -19,6 +19,18 @@ const BOOST_ICON: Record<string, React.ReactNode> = {
   boost_escudo: <PixelShield size={22} />,
 };
 
+/** Campos del perfil que sí se pueden cambiar a mano. */
+type Field = "nick" | "familia" | "correo";
+
+interface EditState {
+  field: Field | null;
+  draft: string;
+  saving: boolean;
+  error: string | null;
+  /** Aviso que no es un error, como el del enlace de confirmación. */
+  note: string | null;
+}
+
 interface Stats {
   done: number;
   stars: number;
@@ -33,11 +45,8 @@ export function Profile() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // edición del nombre de usuario
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [savingName, setSavingName] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
+  // edición del perfil: solo hay un campo abierto a la vez
+  const [edit, setEdit] = useState<EditState>({ field: null, draft: "", saving: false, error: null, note: null });
 
   useEffect(() => {
     if (!player) return;
@@ -71,19 +80,56 @@ export function Profile() {
   const frame = frameStyle(loadout.marco);
   const boosts = itemsOfKind("boost").filter((b) => (inventory[b.id] ?? 0) > 0);
   const boostCount = boosts.reduce((n, b) => n + (inventory[b.id] ?? 0), 0);
+  // Si el jugador eligió familia manda esa; si no, la que más ha jugado.
+  const familiaTexto = player.family
+    ? (familyById(player.family)?.name ?? player.family)
+    : stats
+      ? `${stats.family} (deducida)`
+      : "…";
 
-  async function saveName() {
-    if (!player || savingName) return;
-    setNameError(null);
-    setSavingName(true);
+  function abrir(field: Field, actual: string) {
+    setEdit({ field, draft: actual, saving: false, error: null, note: null });
+  }
+  function cerrar() {
+    setEdit({ field: null, draft: "", saving: false, error: null, note: null });
+  }
+  function setDraft(draft: string) {
+    setEdit((e) => ({ ...e, draft }));
+  }
+
+  async function guardar() {
+    if (!player || edit.saving || !edit.field) return;
+    const { field, draft } = edit;
+    setEdit((e) => ({ ...e, saving: true, error: null, note: null }));
     try {
-      const nombre = await backend.setUsername(draft);
-      setPlayer({ ...player, username: nombre });
-      setEditing(false);
+      if (field === "nick") {
+        const nombre = await backend.setUsername(draft);
+        setPlayer({ ...player, username: nombre });
+        cerrar();
+      } else if (field === "familia") {
+        const fam = await backend.setFamily(draft || null);
+        setPlayer({ ...player, family: fam });
+        cerrar();
+      } else {
+        const hecho = await backend.setEmail(draft);
+        if (hecho) {
+          setPlayer({ ...player, email: draft.trim().toLowerCase() });
+          cerrar();
+        } else {
+          // Supabase no cambia el correo hasta que se pulsa el enlace.
+          setEdit((e) => ({
+            ...e,
+            saving: false,
+            note: `Te enviamos un enlace a ${draft.trim()}. El correo cambiará cuando lo pulses.`,
+          }));
+        }
+      }
     } catch (e) {
-      setNameError(e instanceof ShopError ? e.message : "No se pudo guardar. Revisa tu conexión.");
-    } finally {
-      setSavingName(false);
+      setEdit((prev) => ({
+        ...prev,
+        saving: false,
+        error: e instanceof ShopError ? e.message : "No se pudo guardar. Revisa tu conexión.",
+      }));
     }
   }
 
@@ -127,74 +173,68 @@ export function Profile() {
             </span>
 
             <dl className="w-full min-w-0 flex-1 font-crt text-[18px] leading-tight sm:text-[21px]">
-              {editing ? (
-                <form
-                  className="flex flex-wrap items-center gap-2"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    saveName();
-                  }}
-                >
-                  <label htmlFor="nick" className="sr-only">
-                    Nombre de usuario
-                  </label>
-                  <input
-                    id="nick"
-                    className="input w-48 font-crt text-[19px]"
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    maxLength={20}
-                    autoFocus
-                    aria-describedby="nick-ayuda"
-                  />
-                  <button type="submit" className="btn btn-primary btn-sm" disabled={savingName}>
-                    {savingName ? "…" : "Guardar"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => {
-                      setEditing(false);
-                      setNameError(null);
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </form>
-              ) : (
-                <p className="flex flex-wrap items-center gap-2">
-                  <span className="truncate">
-                    <span className="text-[var(--term-prompt)]">{player.username}</span>
-                    <span className="text-muted">@</span>
-                    <span className="text-[var(--term-path)]">tuxquest</span>
-                  </span>
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => {
-                      setDraft(player.username);
-                      setNameError(null);
-                      setEditing(true);
-                    }}
-                  >
-                    ✎ Editar
-                  </button>
-                </p>
-              )}
-              <p id="nick-ayuda" className="mt-1 font-game text-base text-muted" aria-live="polite">
-                {nameError ? <span className="text-bad">✖ {nameError}</span> : editing ? USERNAME_HELP : null}
+              <p className="flex flex-wrap items-center gap-2">
+                <span className="truncate">
+                  <span className="text-[var(--term-prompt)]">{player.username}</span>
+                  <span className="text-muted">@</span>
+                  <span className="text-[var(--term-path)]">tuxquest</span>
+                </span>
               </p>
               <div className="my-2 border-t-2 border-line" aria-hidden="true" />
 
-              <Line k="Título" v={titleText(loadout.titulo)} />
+              {/* Lo que se puede cambiar */}
+              <Editable
+                k="Usuario"
+                v={player.username}
+                field="nick"
+                edit={edit}
+                help={USERNAME_HELP}
+                maxLength={20}
+                onOpen={abrir}
+                onSave={guardar}
+                onCancel={cerrar}
+                onDraft={setDraft}
+              />
+              <Editable
+                k="Familia"
+                v={familiaTexto}
+                field="familia"
+                edit={edit}
+                help="Es la familia que sale en tu ficha. Si la dejas sin elegir, se usa en la que más misiones hayas superado."
+                options={[{ id: "", name: "Que se deduzca de lo jugado" }, ...FAMILIES.map((f) => ({ id: f.id, name: f.name }))]}
+                onOpen={abrir}
+                onSave={guardar}
+                onCancel={cerrar}
+                onDraft={setDraft}
+              />
+              <Editable
+                k="Correo"
+                v={player.email}
+                field="correo"
+                edit={edit}
+                help={
+                  backend.mode === "supabase"
+                    ? "Te llegará un enlace al correo nuevo. El cambio no se aplica hasta que lo pulses."
+                    : "En modo demo el correo cambia al momento."
+                }
+                type="email"
+                onOpen={abrir}
+                onSave={guardar}
+                onCancel={cerrar}
+                onDraft={setDraft}
+              />
+
+              <div className="my-2 border-t-2 border-line" aria-hidden="true" />
+
+              {/* Lo que sale del juego y no se toca a mano */}
               <Line k="ID" v={player.id.slice(0, 8)} />
-              <Line k="Familia" v={stats?.family ?? "…"} />
+              <Line k="Título" v={titleText(loadout.titulo)} />
+              <Line k="Avatar" v={itemById(loadout.avatar)?.name ?? loadout.avatar} />
+              <Line k="Marco" v={itemById(loadout.marco)?.name ?? loadout.marco} />
               <Line k="Monedas" v={String(player.coins)} />
               <Line k="Misiones" v={stats ? `${stats.done} superadas de ${stats.played} jugadas` : "…"} />
               <Line k="Estrellas" v={stats ? `${stats.stars} de ${stats.played * 3}` : "…"} />
               <Line k="Boosts" v={boostCount === 0 ? "ninguno" : `${boostCount} en el inventario`} />
-              <Line k="Avatar" v={itemById(loadout.avatar)?.name ?? loadout.avatar} />
-              <Line k="Marco" v={itemById(loadout.marco)?.name ?? loadout.marco} />
-              <Line k="Correo" v={player.email} />
               <Line k="Modo" v={backend.mode === "supabase" ? "en línea" : "demo · solo este navegador"} />
 
               {/* la fila de colores que saca neofetch al final */}
@@ -333,6 +373,110 @@ function SlotPreview({ slot, id, name }: { slot: Slot; id: string; name: string 
     >
       <PixelAvatar id="tux" size={24} />
     </span>
+  );
+}
+
+/**
+ * Línea de la ficha que se puede cambiar. Muestra el valor con un botón al
+ * lado y, al pulsarlo, se convierte en el formulario para ese campo.
+ */
+function Editable({
+  k,
+  v,
+  field,
+  edit,
+  help,
+  options,
+  type = "text",
+  maxLength,
+  onOpen,
+  onSave,
+  onCancel,
+  onDraft,
+}: {
+  k: string;
+  v: string;
+  field: Field;
+  edit: EditState;
+  help: string;
+  /** Si viene, se edita con un desplegable en vez de con un cuadro de texto. */
+  options?: { id: string; name: string }[];
+  type?: string;
+  maxLength?: number;
+  onOpen: (f: Field, actual: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onDraft: (s: string) => void;
+}) {
+  const abierto = edit.field === field;
+  const id = `campo-${field}`;
+
+  if (!abierto)
+    return (
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <dt className="shrink-0 text-accent">{k}</dt>
+        <dd className="min-w-0 flex-1 break-words text-[var(--term-text)]">{v}</dd>
+        <button className="btn btn-ghost btn-sm shrink-0" onClick={() => onOpen(field, options ? "" : v)}>
+          ✎ <span className="sr-only">Cambiar {k}</span>
+        </button>
+      </div>
+    );
+
+  return (
+    <div className="card-flat my-2 p-3">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSave();
+        }}
+      >
+        <label htmlFor={id} className="block font-game text-lg text-accent">
+          {k}
+        </label>
+        {options ? (
+          <select
+            id={id}
+            className="input mt-1 font-crt text-[19px]"
+            value={edit.draft}
+            onChange={(e) => onDraft(e.target.value)}
+            autoFocus
+          >
+            {options.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            id={id}
+            type={type}
+            className="input mt-1 font-crt text-[19px]"
+            value={edit.draft}
+            onChange={(e) => onDraft(e.target.value)}
+            maxLength={maxLength}
+            autoFocus
+            autoComplete="off"
+            spellCheck={false}
+          />
+        )}
+        <p className="mt-1.5 font-game text-base text-muted">{help}</p>
+
+        <div aria-live="polite">
+          {edit.error && <p className="mt-2 font-game text-base text-bad">✖ {edit.error}</p>}
+          {edit.note && <p className="mt-2 font-game text-base text-ok">✔ {edit.note}</p>}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="submit" className="btn btn-primary btn-sm" disabled={edit.saving}>
+            {edit.saving ? "Guardando…" : "Guardar"}
+          </button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>
+            {edit.note ? "Cerrar" : "Cancelar"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 

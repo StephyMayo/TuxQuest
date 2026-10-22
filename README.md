@@ -24,9 +24,9 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 
 1. Crea un proyecto en https://supabase.com (plan gratuito).
 2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
-   `supabase/shop.sql`, `supabase/avatares.sql` y `supabase/avatares-2.sql`. Los tres
-   últimos añaden la tienda, los avatares y el cambio de nombre de usuario; todos se
-   pueden volver a ejecutar sin romper nada.
+   `supabase/shop.sql`, `supabase/avatares.sql`, `supabase/avatares-2.sql` y
+   `supabase/perfil.sql`. Los cuatro últimos añaden la tienda, los avatares y la edición
+   del perfil; todos se pueden volver a ejecutar sin romper nada.
 3. En **Authentication > Sign In / Providers > Email**, desactiva *Confirm email* mientras desarrollan
    (si lo dejas activo, el jugador debe confirmar su correo antes de iniciar sesión; la app ya muestra ese aviso).
 
@@ -84,6 +84,7 @@ supabase/
   shop.sql              Tienda: shop_items, inventory, buy_item, equip_item, consume_boost
   avatares.sql          Avatares ilustrados del catálogo
   avatares-2.sql        18 avatares más y set_username()
+  perfil.sql            Familia elegida en el perfil y set_family()
 ```
 
 ## Reglas de dificultad (punto 5.3)
@@ -126,9 +127,18 @@ en `public/avatares/`, y se declaran con el campo `image` del objeto en
 `src/data/shop.ts`. El componente `Avatar` elige uno u otro según el objeto, y los
 encaja en una caja cuadrada para que todos ocupen lo mismo en la interfaz.
 
-El nombre de usuario se cambia desde el perfil. Las reglas (3 a 20 caracteres, letras,
-números o guion bajo) y la comprobación de que no esté repetido se validan en
-`set_username()`, no solo en el formulario.
+Del perfil se pueden cambiar tres cosas: el **nombre de usuario**, la **familia** y el
+**correo**. El resto —ID, monedas, misiones, estrellas, boosts, avatar, título y marco—
+sale del juego y no se edita a mano.
+
+Las reglas del nombre (3 a 20 caracteres, letras, números o guion bajo) y la
+comprobación de que no esté repetido se validan en `set_username()`, no solo en el
+formulario; lo mismo con la familia en `set_family()`.
+
+La familia se puede dejar sin elegir: entonces se deduce de aquella en la que se hayan
+superado más misiones, y la ficha lo indica. El correo pasa por Supabase Auth, que manda
+un enlace de confirmación a la dirección nueva: hasta que no se pulse, la cuenta sigue
+con la anterior.
 
 Las compras no se validan en el navegador: el precio, el desbloqueo y el descuento de
 monedas los resuelven las funciones `buy_item()`, `equip_item()` y `consume_boost()` de
