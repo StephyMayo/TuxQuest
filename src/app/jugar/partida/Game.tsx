@@ -457,7 +457,7 @@ export function Game() {
                 )}
                 {/* Al fallar, la guía de la distribución explica el error */}
                 {!feedback.correct || shielded ? (
-                  <MascotTip distroId={distro!.id} timedOut={feedback.timedOut} seed={idx}>
+                  <MascotTip familyId={family!.id} timedOut={feedback.timedOut} seed={idx}>
                     {q.explanation}
                   </MascotTip>
                 ) : (

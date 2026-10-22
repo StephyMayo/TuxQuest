@@ -119,19 +119,26 @@ monedas los resuelven las funciones `buy_item()`, `equip_item()` y `consume_boos
 PostgreSQL, igual que ya se hacía con `spend_coins()`. El multiplicador del boost de
 monedas se aplica dentro de `finish_mission()`, que además descuenta la unidad usada.
 
-## Guías de cada distribución
+## Guías de cada familia
 
-Cada distribución tiene una guía: un personaje en pixel art que aparece al fallar un
-reto para explicar el error con sus propias palabras, además de la explicación de la
-pregunta. También se presenta en el mapa de misiones.
+Cada familia de distribuciones tiene una guía: un personaje en pixel art que
+aparece al fallar un reto para explicar el error con sus propias palabras,
+además de la explicación de la pregunta. También se presenta en el mapa de
+misiones.
 
-Las doce comparten un mismo dibujo de cuerpo entero de 40×89 píxeles y se diferencian por la paleta de
-la marca y el accesorio: la familia Red Hat lleva sombrero y el resto un prendedor en
-el cabello. Están definidas en `src/data/mascots.ts` (nombre, paleta y frases) y se
-dibujan en `src/components/Mascot.tsx`.
+| Familia | Guía |
+| --- | --- |
+| Debian | Debi · lo estable, paso a paso |
+| Arch | Archel · siempre a la última |
+| Red Hat | Red · firmeza de servidor |
+| SUSE | Susie · el camaleón del equipo |
 
-Las frases se eligen con el índice del reto, no al azar, para que el texto no cambie
-entre el servidor y el navegador.
+Los retratos están en `public/guias/` como PNG y se muestran sin optimizar
+(`unoptimized`), porque el reescalado automático de Next emborrona el pixel
+art. Los textos y las frases viven en `src/data/mascots.ts`.
+
+Las frases se eligen con el índice del reto, no al azar, para que el texto no
+cambie entre el servidor y el navegador.
 
 ## Logos
 

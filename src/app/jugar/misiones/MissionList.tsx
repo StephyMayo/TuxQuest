@@ -6,8 +6,8 @@ import { MISSION_PASS_RATIO, MISSION_SIZE } from "@/data/catalog";
 import { missionsFor, type Mission, type MissionProgress } from "@/lib/missions";
 import { Stars, PixelTux, starsFor } from "@/components/Pixel";
 import { FamilyBadge } from "@/components/Logos";
-import { PixelMascot } from "@/components/Mascot";
-import { mascotFor } from "@/data/mascots";
+import { MascotPortrait } from "@/components/Mascot";
+import { guideFor } from "@/data/mascots";
 import { useGameParams } from "@/components/useGameParams";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
@@ -28,7 +28,7 @@ export function MissionList() {
       .catch(() => setError("No se pudieron cargar las misiones. Revisa tu conexión."));
   }, [player, valid, backend, family, distro, difficulty]);
 
-  const guide = mascotFor(distro?.id ?? "");
+  const guide = guideFor(family?.id ?? "");
 
   if (!player) return null;
   if (!valid)
@@ -59,10 +59,10 @@ export function MissionList() {
             {family!.name} › {distro!.name} › {difficulty!.name}
           </p>
           <p className="mt-1 font-game text-lg text-muted">
-            Te acompaña <span style={{ color: guide.palette.iris }}>{guide.name}</span>, {guide.role} de {distro!.name}.
+            Te acompaña <span style={{ color: guide.color }}>{guide.name}</span>, {guide.role}.
           </p>
         </div>
-        <PixelMascot distroId={distro!.id} size={64} bob className="hidden shrink-0 sm:block" />
+        <MascotPortrait familyId={family!.id} width={76} className="hidden shrink-0 sm:block" />
         {missions && (
           <div className="w-full sm:w-56">
             <div className="flex justify-between font-game text-lg">
