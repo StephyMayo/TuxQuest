@@ -25,7 +25,7 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 1. Crea un proyecto en https://supabase.com (plan gratuito).
 2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
    `supabase/shop.sql`, `supabase/avatares.sql`, `supabase/avatares-2.sql`,
-   `supabase/perfil.sql` y `supabase/progreso.sql`. Los cinco últimos añaden la tienda, los avatares y la edición
+   `supabase/perfil.sql`, `supabase/progreso.sql` y `supabase/claves.sql`. Los seis últimos añaden la tienda, los avatares y la edición
    del perfil; todos se pueden volver a ejecutar sin romper nada.
 3. En **Authentication > Sign In / Providers > Email**, desactiva *Confirm email* mientras desarrollan
    (si lo dejas activo, el jugador debe confirmar su correo antes de iniciar sesión; la app ya muestra ese aviso).
@@ -86,7 +86,24 @@ supabase/
   avatares-2.sql        18 avatares más y set_username()
   perfil.sql            Familia elegida en el perfil y set_family()
   progreso.sql          Tabla family_progress y finish_run()
+  claves.sql            profiles.family_id con clave foránea
+  english.sql           Solo para bases anteriores: pasa los datos a inglés
 ```
+
+## Idiomas
+
+El **código y la base de datos van en inglés**: nombres de tabla, columnas y valores
+guardados (`easy`, `medium`, `hard`, `mission`, `story`, `title`, `frame`…).
+
+El **texto que ve el jugador va en castellano**: enunciados de las preguntas, nombres y
+descripciones de los objetos, narrativa del modo historia y toda la interfaz. Eso es el
+idioma del producto, no código mezclado.
+
+Las direcciones de las páginas también se quedan en castellano (`/jugar`, `/tienda`,
+`/perfil`), porque la URL la ve el usuario igual que los textos de la pantalla.
+
+Si tu base de datos es anterior a este cambio, `supabase/english.sql` renombra las
+columnas, traduce los valores guardados y cambia los identificadores de los objetos.
 
 ## Cómo se guarda el progreso
 

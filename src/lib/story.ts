@@ -17,7 +17,7 @@ function porTema(questions: Question[], family: FamilyId, topic: string, difficu
   const delTema = questions.filter(
     (q) => q.active !== false && q.topic === topic && TYPEABLE.has(q.type) && (q.familyId === null || q.familyId === family),
   );
-  const orden: Difficulty[] = [difficulty, ...(["facil", "medio", "dificil"] as Difficulty[]).filter((d) => d !== difficulty)];
+  const orden: Difficulty[] = [difficulty, ...(["easy", "medium", "hard"] as Difficulty[]).filter((d) => d !== difficulty)];
   const salida: string[] = [];
   for (const d of orden) {
     for (const q of delTema.filter((x) => x.difficulty === d)) {
@@ -66,6 +66,6 @@ export function shuffled<T>(arr: T[]): T[] {
 }
 
 /** Velocidad base de los enemigos, en porcentaje de ancho por segundo. */
-export const SPEED: Record<Difficulty, number> = { facil: 3.4, medio: 4.6, dificil: 6.2 };
+export const SPEED: Record<Difficulty, number> = { easy: 3.4, medium: 4.6, hard: 6.2 };
 /** Segundos entre apariciones. */
-export const SPAWN: Record<Difficulty, number> = { facil: 2.6, medio: 2.1, dificil: 1.7 };
+export const SPAWN: Record<Difficulty, number> = { easy: 2.6, medium: 2.1, hard: 1.7 };

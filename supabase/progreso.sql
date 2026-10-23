@@ -16,9 +16,9 @@
 create table if not exists public.family_progress (
   user_id    uuid not null references public.profiles(id) on delete cascade,
   family_id  text not null references public.families(id),
-  difficulty text not null check (difficulty in ('facil', 'medio', 'dificil')),
-  -- 'mision' para las misiones sueltas, 'historia' para los capítulos
-  mode       text not null check (mode in ('mision', 'historia')),
+  difficulty text not null check (difficulty in ('easy', 'medium', 'hard')),
+  -- 'mission' para las misiones sueltas, 'story' para los capítulos
+  mode       text not null check (mode in ('mission', 'story')),
   -- el tema ('redes', 'permisos'…) o 'final' para el desafío final
   topic      text not null,
 
@@ -47,7 +47,7 @@ insert into public.family_progress (user_id, family_id, difficulty, mode, topic,
 select mp.user_id,
        split_part(mp.mission_key, ':', 1),
        split_part(mp.mission_key, ':', 2),
-       'mision',
+       'mission',
        split_part(mp.mission_key, ':', 3),
        mp.best_correct,
        greatest(mp.best_total, 1),
@@ -55,7 +55,7 @@ select mp.user_id,
        mp.updated_at
   from public.mission_progress mp
  where split_part(mp.mission_key, ':', 1) in ('debian', 'arch', 'redhat', 'suse')
-   and split_part(mp.mission_key, ':', 2) in ('facil', 'medio', 'dificil')
+   and split_part(mp.mission_key, ':', 2) in ('easy', 'medium', 'hard')
    and split_part(mp.mission_key, ':', 3) <> ''
 on conflict (user_id, family_id, difficulty, mode, topic) do nothing;
 
@@ -80,8 +80,8 @@ declare
 begin
   if auth.uid() is null then raise exception 'Sesion no iniciada'; end if;
   if p_family not in ('debian', 'arch', 'redhat', 'suse') then raise exception 'Familia no valida'; end if;
-  if p_difficulty not in ('facil', 'medio', 'dificil') then raise exception 'Dificultad no valida'; end if;
-  if p_mode not in ('mision', 'historia') then raise exception 'Modo no valido'; end if;
+  if p_difficulty not in ('easy', 'medium', 'hard') then raise exception 'Dificultad no valida'; end if;
+  if p_mode not in ('mission', 'story') then raise exception 'Modo no valido'; end if;
   if coalesce(p_topic, '') = '' then raise exception 'Tema no valido'; end if;
   if p_total <= 0 or p_total > 30 or p_correct < 0 or p_correct > p_total then raise exception 'Resultado no valido'; end if;
   -- Limite: como maximo 20 monedas por acierto (dificultad dificil)
@@ -105,9 +105,9 @@ begin
 
   -- El multiplicador se aplica aqui, no en el navegador: solo cuenta si el
   -- jugador tiene de verdad el boost, y se gasta al usarlo.
-  if p_boost = 'boost_monedas' then
+  if p_boost = 'boost_coins' then
     update inventory set qty = qty - 1, updated_at = now()
-     where user_id = auth.uid() and item_id = 'boost_monedas' and qty > 0
+     where user_id = auth.uid() and item_id = 'boost_coins' and qty > 0
     returning qty into v_used;
     if v_used is not null then v_payout := v_payout * 2; end if;
   end if;

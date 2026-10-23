@@ -10,13 +10,13 @@ import { PixelAvatar, PixelBag, PixelBulb, PixelClock, PixelCoin, PixelLock, Pix
 import { Avatar } from "@/components/Avatar";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
-const SLOTS: Slot[] = ["avatar", "titulo", "marco"];
+const SLOTS: Slot[] = ["avatar", "title", "frame"];
 
 const BOOST_ICON: Record<string, React.ReactNode> = {
-  boost_monedas: <PixelCoin size={22} />,
-  boost_tiempo: <PixelClock size={22} />,
-  boost_pista: <PixelBulb size={22} />,
-  boost_escudo: <PixelShield size={22} />,
+  boost_coins: <PixelCoin size={22} />,
+  boost_time: <PixelClock size={22} />,
+  boost_hint: <PixelBulb size={22} />,
+  boost_shield: <PixelShield size={22} />,
 };
 
 /** Campos del perfil que sí se pueden cambiar a mano. */
@@ -72,7 +72,7 @@ export function Profile() {
 
   if (!player) return null;
   const { loadout } = player;
-  const frame = frameStyle(loadout.marco);
+  const frame = frameStyle(loadout.frame);
   const boosts = itemsOfKind("boost").filter((b) => (inventory[b.id] ?? 0) > 0);
   const boostCount = boosts.reduce((n, b) => n + (inventory[b.id] ?? 0), 0);
   // Si el jugador eligió familia manda esa; si no, la que más ha jugado.
@@ -223,9 +223,9 @@ export function Profile() {
 
               {/* Lo que sale del juego y no se toca a mano */}
               <Line k="ID" v={player.id.slice(0, 8)} />
-              <Line k="Título" v={titleText(loadout.titulo)} />
+              <Line k="Título" v={titleText(loadout.title)} />
               <Line k="Avatar" v={itemById(loadout.avatar)?.name ?? loadout.avatar} />
-              <Line k="Marco" v={itemById(loadout.marco)?.name ?? loadout.marco} />
+              <Line k="Marco" v={itemById(loadout.frame)?.name ?? loadout.frame} />
               <Line k="Monedas" v={String(player.coins)} />
               <Line k="Misiones" v={stats ? `${stats.done} superadas de ${stats.played} jugadas` : "…"} />
               <Line k="Estrellas" v={stats ? `${stats.stars} de ${stats.played * 3}` : "…"} />
@@ -353,7 +353,7 @@ export function Profile() {
 
 function SlotPreview({ slot, id, name }: { slot: Slot; id: string; name: string }) {
   if (slot === "avatar") return <Avatar id={id} size={128} className="shrink-0" />;
-  if (slot === "titulo")
+  if (slot === "title")
     return (
       <span className="grid h-12 w-12 shrink-0 place-items-center border-[3px] border-ink bg-bg-2 font-pixel text-[13px] text-accent" aria-hidden="true">
         {name.slice(0, 1).toUpperCase()}

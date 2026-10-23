@@ -33,7 +33,7 @@ create table if not exists public.questions (
   id text primary key,
   family_id text references public.families(id),          -- null = común a todas las familias
   distro_id text references public.distros(id),           -- null = toda la familia
-  difficulty text not null check (difficulty in ('facil', 'medio', 'dificil')),
+  difficulty text not null check (difficulty in ('easy', 'medium', 'hard')),
   type text not null check (type in ('write', 'choice', 'complete', 'fix')),
   topic text not null,
   prompt text not null,

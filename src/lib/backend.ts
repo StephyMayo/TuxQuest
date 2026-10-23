@@ -144,15 +144,15 @@ interface ProfileRow {
   username: string;
   coins: number;
   avatar: string | null;
-  titulo: string | null;
-  marco: string | null;
-  family: string | null;
+  title: string | null;
+  frame: string | null;
+  family_id: string | null;
 }
 
 const loadoutOf = (r: ProfileRow): Loadout => ({
   avatar: r.avatar ?? DEFAULT_LOADOUT.avatar,
-  titulo: r.titulo ?? DEFAULT_LOADOUT.titulo,
-  marco: r.marco ?? DEFAULT_LOADOUT.marco,
+  title: r.title ?? DEFAULT_LOADOUT.title,
+  frame: r.frame ?? DEFAULT_LOADOUT.frame,
 });
 
 class SupabaseBackend implements Backend {
@@ -160,10 +160,10 @@ class SupabaseBackend implements Backend {
   constructor(private db: SupabaseClient) {}
 
   private async profile(userId: string, email: string): Promise<Player | null> {
-    const { data, error } = await this.db.from("profiles").select("id, username, coins, avatar, titulo, marco, family").eq("id", userId).single();
+    const { data, error } = await this.db.from("profiles").select("id, username, coins, avatar, title, frame, family_id").eq("id", userId).single();
     if (error || !data) return null;
     const row = data as ProfileRow;
-    return { id: row.id, username: row.username, coins: row.coins, email, family: row.family, loadout: loadoutOf(row) };
+    return { id: row.id, username: row.username, coins: row.coins, email, family: row.family_id, loadout: loadoutOf(row) };
   }
 
   async getPlayer() {
@@ -261,7 +261,7 @@ class SupabaseBackend implements Backend {
     const { data, error } = await this.db.rpc("equip_item", { p_slot: slot, p_item_id: itemId });
     if (error) throw new ShopError(shopMessage(error.message));
     const row = data as Loadout;
-    return { avatar: row.avatar, titulo: row.titulo, marco: row.marco };
+    return { avatar: row.avatar, title: row.title, frame: row.frame };
   }
 
   async consumeBoost(itemId: ActiveBoost) {
@@ -299,6 +299,20 @@ interface DemoUser extends Player {
   passwordHash: string;
   inventory: Inventory;
 }
+
+/** Valores que usaba la versión en castellano, para traducir lo guardado. */
+const OLD_DIFFICULTY: Record<string, string> = { facil: "easy", medio: "medium", dificil: "hard" };
+const OLD_TOPIC: Record<string, string> = {
+  navegacion: "navigation",
+  archivos: "files",
+  paquetes: "packages",
+  permisos: "permissions",
+  busqueda: "search",
+  sistema: "system",
+  procesos: "processes",
+  servicios: "services",
+  redes: "network",
+};
 
 const USERS = "tuxquest.users";
 const SESSION = "tuxquest.session";
@@ -425,11 +439,17 @@ class DemoBackend implements Backend {
     // Partidas guardadas con el formato viejo, "familia:dificultad:tema".
     // Las del modo historia iban como "historia:<tema>", sin familia, así
     // que no hay de dónde sacarla y se descartan.
+    //
+    // La dificultad y el tema venían en castellano, así que además de
+    // repartir la clave hay que traducirlos: si no, esas filas no
+    // encajarían nunca con lo que pide el juego.
     const migrado: ProgressRow[] = [];
     for (const [clave, v] of Object.entries(guardado)) {
-      const [family, difficulty, topic] = clave.split(":");
-      if (!topic || !["debian", "arch", "redhat", "suse"].includes(family)) continue;
-      migrado.push({ family, difficulty, mode: "mision", topic, ...v });
+      const [family, dif, tema] = clave.split(":");
+      if (!tema || !["debian", "arch", "redhat", "suse"].includes(family)) continue;
+      const difficulty = OLD_DIFFICULTY[dif] ?? dif;
+      const topic = OLD_TOPIC[tema] ?? tema;
+      migrado.push({ family, difficulty, mode: "mission", topic, ...v });
     }
     save(progressKey(u.id), migrado);
     return migrado;
@@ -471,7 +491,7 @@ class DemoBackend implements Backend {
     else all.push(fila);
     save(progressKey(u.id), all);
     let payout = coins;
-    if (boost === "boost_monedas" && (u.inventory[boost] ?? 0) > 0) {
+    if (boost === "boost_coins" && (u.inventory[boost] ?? 0) > 0) {
       u.inventory[boost] -= 1;
       payout *= 2;
     }

@@ -8,7 +8,7 @@ import type { Inventory, ItemKind, Loadout, ShopItem, Slot } from "./types.ts";
 export const SHOP_ITEMS: ShopItem[] = [
   // --- Boosts: se gastan al usarlos durante una misión -----------------
   {
-    id: "boost_monedas",
+    id: "boost_coins",
     kind: "boost",
     name: "Doble moneda",
     description: "Duplica las monedas que ganes en la misión. Actívalo antes de empezar.",
@@ -16,7 +16,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     stackable: true,
   },
   {
-    id: "boost_tiempo",
+    id: "boost_time",
     kind: "boost",
     name: "Tiempo extra",
     description: "Suma 15 segundos al reloj del reto actual. Solo sirve en Medio y Difícil.",
@@ -24,7 +24,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     stackable: true,
   },
   {
-    id: "boost_pista",
+    id: "boost_hint",
     kind: "boost",
     name: "Pista gratis",
     description: "Revela la pista de un reto sin pagar monedas, incluso en Difícil.",
@@ -32,7 +32,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     stackable: true,
   },
   {
-    id: "boost_escudo",
+    id: "boost_shield",
     kind: "boost",
     name: "Escudo de Tux",
     description: "Tu siguiente fallo cuenta como acierto. Se gasta al usarse.",
@@ -42,45 +42,45 @@ export const SHOP_ITEMS: ShopItem[] = [
 
   // --- Avatares --------------------------------------------------------
   { id: "tux", kind: "avatar", name: "Tux clásico", description: "El pingüino de siempre. Lo tienes desde el inicio.", price: 0 },
-  { id: "tux_gafas", kind: "avatar", name: "Tux hacker", description: "Con gafas de sol. Porque la terminal es oscura.", price: 60 },
+  { id: "tux_shades", kind: "avatar", name: "Tux hacker", description: "Con gafas de sol. Porque la terminal es oscura.", price: 60 },
   { id: "tux_ninja", kind: "avatar", name: "Tux ninja", description: "Se mueve entre directorios sin hacer ruido.", price: 120, requires: 3 },
-  { id: "tux_rey", kind: "avatar", name: "Tux rey", description: "Corona para quien domina su distribución.", price: 200, requires: 6 },
-  { id: "tux_oro", kind: "avatar", name: "Tux dorado", description: "Edición brillante. Pura presunción.", price: 350, requires: 10 },
-  { id: "tux_fantasma", kind: "avatar", name: "Tux fantasma", description: "Un proceso en segundo plano que nadie puede matar.", price: 280, requires: 8 },
+  { id: "tux_king", kind: "avatar", name: "Tux rey", description: "Corona para quien domina su distribución.", price: 200, requires: 6 },
+  { id: "tux_gold", kind: "avatar", name: "Tux dorado", description: "Edición brillante. Pura presunción.", price: 350, requires: 10 },
+  { id: "tux_ghost", kind: "avatar", name: "Tux fantasma", description: "Un proceso en segundo plano que nadie puede matar.", price: 280, requires: 8 },
   {
-    id: "av_tactica",
+    id: "av_tactical",
     kind: "avatar",
     name: "Operadora táctica",
     description: "Sale a campo con el portátil en la mano. Nunca pierde la conexión.",
     price: 400,
     requires: 5,
-    image: { src: "/avatares/tactica.png", w: 133, h: 300 },
+    image: { src: "/avatares/av_tactical.png", w: 133, h: 300 },
   },
   {
-    id: "av_exploradora",
+    id: "av_scout",
     kind: "avatar",
     name: "Exploradora",
     description: "Se mueve por el sistema de archivos como por un tejado.",
     price: 480,
     requires: 8,
-    image: { src: "/avatares/exploradora.png", w: 171, h: 300 },
+    image: { src: "/avatares/av_scout.png", w: 171, h: 300 },
   },
   {
-    id: "av_infiltrada",
+    id: "av_infiltrator",
     kind: "avatar",
     name: "Infiltrada",
     description: "Entra, hace su trabajo y no deja ni una línea en los registros.",
     price: 550,
     requires: 12,
-    image: { src: "/avatares/infiltrada.png", w: 147, h: 300 },
+    image: { src: "/avatares/av_infiltrator.png", w: 147, h: 300 },
   },
   {
-    id: "av_escudero",
+    id: "av_squire",
     kind: "avatar",
     name: "Escudero verde",
     description: "Pequeño, con casco y bastón. Todo el mundo empieza así.",
     price: 120,
-    image: { src: "/avatares/av_escudero.webp", w: 197, h: 240 },
+    image: { src: "/avatares/av_squire.webp", w: 197, h: 240 },
   },
   {
     id: "av_marine",
@@ -91,44 +91,44 @@ export const SHOP_ITEMS: ShopItem[] = [
     image: { src: "/avatares/av_marine.webp", w: 175, h: 240 },
   },
   {
-    id: "av_guardia",
+    id: "av_guard",
     kind: "avatar",
     name: "Guardia dorada",
     description: "De guardia en el puerto 22, turno de noche.",
     price: 170, requires: 1,
-    image: { src: "/avatares/av_guardia.webp", w: 165, h: 240 },
+    image: { src: "/avatares/av_guard.webp", w: 165, h: 240 },
   },
   {
-    id: "av_automata",
+    id: "av_automaton",
     kind: "avatar",
     name: "Autómata oxidado",
     description: "Lleva décadas funcionando. Nadie recuerda quién lo compiló.",
     price: 200, requires: 2,
-    image: { src: "/avatares/av_automata.webp", w: 241, h: 240 },
+    image: { src: "/avatares/av_automaton.webp", w: 241, h: 240 },
   },
   {
-    id: "av_dagas",
+    id: "av_daggers",
     kind: "avatar",
     name: "Dagas gemelas",
     description: "Dos filos, dos terminales abiertas.",
     price: 220, requires: 3,
-    image: { src: "/avatares/av_dagas.webp", w: 172, h: 240 },
+    image: { src: "/avatares/av_daggers.webp", w: 172, h: 240 },
   },
   {
-    id: "av_orco",
+    id: "av_orc",
     kind: "avatar",
     name: "Orco martillador",
     description: "Su respuesta a cualquier error es volver a compilar.",
     price: 240, requires: 3,
-    image: { src: "/avatares/av_orco.webp", w: 218, h: 240 },
+    image: { src: "/avatares/av_orc.webp", w: 218, h: 240 },
   },
   {
-    id: "av_barbaro",
+    id: "av_barbarian",
     kind: "avatar",
     name: "Bárbaro del log",
     description: "Lee diez mil líneas de registro sin pestañear.",
     price: 260, requires: 4,
-    image: { src: "/avatares/av_barbaro.webp", w: 204, h: 240 },
+    image: { src: "/avatares/av_barbarian.webp", w: 204, h: 240 },
   },
   {
     id: "av_ninja",
@@ -139,12 +139,12 @@ export const SHOP_ITEMS: ShopItem[] = [
     image: { src: "/avatares/av_ninja.webp", w: 187, h: 240 },
   },
   {
-    id: "av_garras",
+    id: "av_claws",
     kind: "avatar",
     name: "Garras de plasma",
     description: "Corta procesos colgados de un zarpazo.",
     price: 300, requires: 5,
-    image: { src: "/avatares/av_garras.webp", w: 171, h: 240 },
+    image: { src: "/avatares/av_claws.webp", w: 171, h: 240 },
   },
   {
     id: "av_neon",
@@ -155,44 +155,44 @@ export const SHOP_ITEMS: ShopItem[] = [
     image: { src: "/avatares/av_neon.webp", w: 146, h: 240 },
   },
   {
-    id: "av_arquera",
+    id: "av_archer",
     kind: "avatar",
     name: "Arquera del bosque",
     description: "Paciente. Espera a que el servidor baje la guardia.",
     price: 340, requires: 7,
-    image: { src: "/avatares/av_arquera.webp", w: 187, h: 240 },
+    image: { src: "/avatares/av_archer.webp", w: 187, h: 240 },
   },
   {
-    id: "av_maga",
+    id: "av_mage",
     kind: "avatar",
     name: "Maga arcana",
     description: "Sus conjuros son alias que nadie más entiende.",
     price: 380, requires: 8,
-    image: { src: "/avatares/av_maga.webp", w: 190, h: 240 },
+    image: { src: "/avatares/av_mage.webp", w: 190, h: 240 },
   },
   {
-    id: "av_bruja",
+    id: "av_witch",
     kind: "avatar",
     name: "Bruja del shell",
     description: "Invoca con un pipe y tres comandos encadenados.",
     price: 400, requires: 8,
-    image: { src: "/avatares/av_bruja.webp", w: 182, h: 240 },
+    image: { src: "/avatares/av_witch.webp", w: 182, h: 240 },
   },
   {
-    id: "av_francotiradora",
+    id: "av_sniper",
     kind: "avatar",
     name: "Francotiradora",
     description: "Un disparo, un bug menos.",
     price: 430, requires: 10,
-    image: { src: "/avatares/av_francotiradora.webp", w: 183, h: 240 },
+    image: { src: "/avatares/av_sniper.webp", w: 183, h: 240 },
   },
   {
-    id: "av_trol",
+    id: "av_troll",
     kind: "avatar",
     name: "Trol de root",
     description: "Vive bajo el sistema de archivos y cobra peaje.",
     price: 460, requires: 10,
-    image: { src: "/avatares/av_trol.webp", w: 217, h: 240 },
+    image: { src: "/avatares/av_troll.webp", w: 217, h: 240 },
   },
   {
     id: "av_mecha",
@@ -203,40 +203,40 @@ export const SHOP_ITEMS: ShopItem[] = [
     image: { src: "/avatares/av_mecha.webp", w: 236, h: 240 },
   },
   {
-    id: "av_demonio",
+    id: "av_demon",
     kind: "avatar",
     name: "Demonio del kernel",
     description: "Lo invocaron con un rm -rf y ya no se fue.",
     price: 550, requires: 14,
-    image: { src: "/avatares/av_demonio.webp", w: 208, h: 240 },
+    image: { src: "/avatares/av_demon.webp", w: 208, h: 240 },
   },
   {
-    id: "av_espectro",
+    id: "av_specter",
     kind: "avatar",
     name: "Caballero espectral",
     description: "Sigue rondando el servidor que apagaron en 2009.",
     price: 600, requires: 16,
-    image: { src: "/avatares/av_espectro.webp", w: 223, h: 240 },
+    image: { src: "/avatares/av_specter.webp", w: 223, h: 240 },
   },
 
   // --- Títulos ---------------------------------------------------------
-  { id: "titulo_novato", kind: "titulo", name: "Novato", description: "Todos empezamos escribiendo ls.", price: 0 },
-  { id: "titulo_shell", kind: "titulo", name: "Aprendiz de shell", description: "Ya no le temes al cursor parpadeante.", price: 40 },
-  { id: "titulo_script", kind: "titulo", name: "Script Kiddie", description: "Copias comandos, pero con estilo.", price: 90, requires: 3 },
-  { id: "titulo_sysadmin", kind: "titulo", name: "Sysadmin", description: "Los servicios te obedecen.", price: 180, requires: 6 },
-  { id: "titulo_kernel", kind: "titulo", name: "Maestro del Kernel", description: "Compilas por diversión.", price: 300, requires: 9 },
-  { id: "titulo_root", kind: "titulo", name: "root", description: "Con gran poder viene un gran rm -rf. Úsalo con cuidado.", price: 500, requires: 12 },
+  { id: "title_rookie", kind: "title", name: "Novato", description: "Todos empezamos escribiendo ls.", price: 0 },
+  { id: "title_shell", kind: "title", name: "Aprendiz de shell", description: "Ya no le temes al cursor parpadeante.", price: 40 },
+  { id: "title_script", kind: "title", name: "Script Kiddie", description: "Copias comandos, pero con estilo.", price: 90, requires: 3 },
+  { id: "title_sysadmin", kind: "title", name: "Sysadmin", description: "Los servicios te obedecen.", price: 180, requires: 6 },
+  { id: "title_kernel", kind: "title", name: "Maestro del Kernel", description: "Compilas por diversión.", price: 300, requires: 9 },
+  { id: "title_root", kind: "title", name: "root", description: "Con gran poder viene un gran rm -rf. Úsalo con cuidado.", price: 500, requires: 12 },
 
   // --- Marcos del perfil ----------------------------------------------
-  { id: "marco_base", kind: "marco", name: "Marco estándar", description: "Sobrio y funcional, como Debian.", price: 0 },
-  { id: "marco_bronce", kind: "marco", name: "Marco de bronce", description: "Tu primera medalla.", price: 70 },
-  { id: "marco_plata", kind: "marco", name: "Marco de plata", description: "Brilla sin exagerar.", price: 150, requires: 4 },
-  { id: "marco_oro", kind: "marco", name: "Marco de oro", description: "Para los que terminan el desafío final.", price: 320, requires: 8 },
-  { id: "marco_neon", kind: "marco", name: "Marco neón", description: "Estética de terminal a las 3 de la madrugada.", price: 260, requires: 6 },
+  { id: "frame_basic", kind: "frame", name: "Marco estándar", description: "Sobrio y funcional, como Debian.", price: 0 },
+  { id: "frame_bronze", kind: "frame", name: "Marco de bronce", description: "Tu primera medalla.", price: 70 },
+  { id: "frame_silver", kind: "frame", name: "Marco de plata", description: "Brilla sin exagerar.", price: 150, requires: 4 },
+  { id: "frame_gold", kind: "frame", name: "Marco de oro", description: "Para los que terminan el desafío final.", price: 320, requires: 8 },
+  { id: "frame_neon", kind: "frame", name: "Marco neón", description: "Estética de terminal a las 3 de la madrugada.", price: 260, requires: 6 },
 ];
 
 /** Lo que trae puesto un jugador nuevo: lo gratuito. */
-export const DEFAULT_LOADOUT: Loadout = { avatar: "tux", titulo: "titulo_novato", marco: "marco_base" };
+export const DEFAULT_LOADOUT: Loadout = { avatar: "tux", title: "title_rookie", frame: "frame_basic" };
 
 /** Items gratuitos: se consideran siempre en propiedad, no hace falta comprarlos. */
 export const FREE_ITEMS = SHOP_ITEMS.filter((i) => i.price === 0).map((i) => i.id);
@@ -244,18 +244,18 @@ export const FREE_ITEMS = SHOP_ITEMS.filter((i) => i.price === 0).map((i) => i.i
 export const KIND_LABEL: Record<ItemKind, string> = {
   boost: "Boosts",
   avatar: "Avatares",
-  titulo: "Títulos",
-  marco: "Marcos",
+  title: "Títulos",
+  frame: "Marcos",
 };
 
 export const KIND_HELP: Record<ItemKind, string> = {
   boost: "Se gastan al usarlos dentro de una misión. Puedes acumular varios.",
   avatar: "El pingüino que te representa en el perfil y la cabecera.",
-  titulo: "Aparece debajo de tu nombre de usuario.",
-  marco: "Cambia el color del borde de tu tarjeta de perfil.",
+  title: "Aparece debajo de tu nombre de usuario.",
+  frame: "Cambia el color del borde de tu tarjeta de perfil.",
 };
 
-export const SHOP_ORDER: ItemKind[] = ["boost", "avatar", "titulo", "marco"];
+export const SHOP_ORDER: ItemKind[] = ["boost", "avatar", "title", "frame"];
 
 export const itemById = (id: string) => SHOP_ITEMS.find((i) => i.id === id);
 export const itemsOfKind = (kind: ItemKind) => SHOP_ITEMS.filter((i) => i.kind === kind);
@@ -269,11 +269,11 @@ export const titleText = (id: string) => itemById(id)?.name ?? "";
 
 /** Colores de cada marco: [borde, resplandor]. */
 export const FRAME_STYLE: Record<string, { border: string; glow: string }> = {
-  marco_base: { border: "#06030f", glow: "transparent" },
-  marco_bronce: { border: "#c87f34", glow: "#c87f3455" },
-  marco_plata: { border: "#cfd6e6", glow: "#cfd6e655" },
-  marco_oro: { border: "#ffd23f", glow: "#ffd23f66" },
-  marco_neon: { border: "#3be8ff", glow: "#3be8ff66" },
+  frame_basic: { border: "#06030f", glow: "transparent" },
+  frame_bronze: { border: "#c87f34", glow: "#c87f3455" },
+  frame_silver: { border: "#cfd6e6", glow: "#cfd6e655" },
+  frame_gold: { border: "#ffd23f", glow: "#ffd23f66" },
+  frame_neon: { border: "#3be8ff", glow: "#3be8ff66" },
 };
 
-export const frameStyle = (id: string) => FRAME_STYLE[id] ?? FRAME_STYLE.marco_base;
+export const frameStyle = (id: string) => FRAME_STYLE[id] ?? FRAME_STYLE.frame_basic;

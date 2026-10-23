@@ -52,7 +52,7 @@ export const DISTROS: Distro[] = [
 
 export const DIFFICULTIES: DifficultyRules[] = [
   {
-    id: "facil",
+    id: "easy",
     name: "Fácil",
     types: ["choice", "complete"],
     seconds: null,
@@ -61,7 +61,7 @@ export const DIFFICULTIES: DifficultyRules[] = [
     commands: "Básicos (ls, cd, mkdir, pwd)",
   },
   {
-    id: "medio",
+    id: "medium",
     name: "Medio",
     types: ["write"],
     seconds: 60,
@@ -70,7 +70,7 @@ export const DIFFICULTIES: DifficultyRules[] = [
     commands: "Intermedios (permisos, búsqueda, instalar programas)",
   },
   {
-    id: "dificil",
+    id: "hard",
     name: "Difícil",
     types: ["write", "fix"],
     seconds: 30,
@@ -81,15 +81,15 @@ export const DIFFICULTIES: DifficultyRules[] = [
 ];
 
 export const TOPICS: Record<Topic, { title: string; description: string; order: number }> = {
-  navegacion: { title: "Primeros pasos", description: "Moverte entre carpetas y saber dónde estás.", order: 1 },
-  archivos: { title: "Manos a los archivos", description: "Crear, copiar, mover, leer y borrar.", order: 2 },
-  paquetes: { title: "Instalar programas", description: "El gestor de paquetes de tu familia.", order: 3 },
-  permisos: { title: "Permisos y usuarios", description: "Quién puede leer, escribir o ejecutar.", order: 4 },
-  busqueda: { title: "Buscar y filtrar", description: "Encontrar archivos y texto.", order: 5 },
-  sistema: { title: "Conoce tu sistema", description: "Disco, memoria y información del equipo.", order: 6 },
-  procesos: { title: "Procesos", description: "Ver y detener programas en ejecución.", order: 7 },
-  servicios: { title: "Servicios", description: "Controlar servicios con systemd.", order: 8 },
-  redes: { title: "Redes", description: "Conectividad y acceso remoto.", order: 9 },
+  navigation: { title: "Primeros pasos", description: "Moverte entre carpetas y saber dónde estás.", order: 1 },
+  files: { title: "Manos a los archivos", description: "Crear, copiar, mover, leer y borrar.", order: 2 },
+  packages: { title: "Instalar programas", description: "El gestor de paquetes de tu familia.", order: 3 },
+  permissions: { title: "Permisos y usuarios", description: "Quién puede leer, escribir o ejecutar.", order: 4 },
+  search: { title: "Buscar y filtrar", description: "Encontrar archivos y texto.", order: 5 },
+  system: { title: "Conoce tu sistema", description: "Disco, memoria y información del equipo.", order: 6 },
+  processes: { title: "Procesos", description: "Ver y detener programas en ejecución.", order: 7 },
+  services: { title: "Servicios", description: "Controlar servicios con systemd.", order: 8 },
+  network: { title: "Redes", description: "Conectividad y acceso remoto.", order: 9 },
 };
 
 export const MISSION_PASS_RATIO = 0.7;

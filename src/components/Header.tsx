@@ -19,7 +19,7 @@ export function Coins({ value }: { value: number }) {
 export function Header() {
   const { player, loading, signOut, backend } = useAuth();
   const router = useRouter();
-  const frame = player ? frameStyle(player.loadout.marco) : null;
+  const frame = player ? frameStyle(player.loadout.frame) : null;
 
   return (
     <header className="sticky top-0 z-20 border-b-[3px] border-ink bg-bg-2/95 backdrop-blur">

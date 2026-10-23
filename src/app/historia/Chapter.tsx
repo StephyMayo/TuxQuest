@@ -40,7 +40,7 @@ const JUEGOS: Record<string, (p: GameProps) => React.ReactElement> = {
   candado: Candado,
   rastro: Rastro,
   memoria: Memoria,
-  procesos: Procesos,
+  processes: Procesos,
   tablero: Tablero,
   ruta: Ruta,
 };
@@ -79,7 +79,7 @@ export function Chapter() {
       .finishRun(
         family!.id,
         difficulty!.id,
-        "historia",
+        "story",
         chapter.topic,
         result.score,
         Math.max(1, result.total),

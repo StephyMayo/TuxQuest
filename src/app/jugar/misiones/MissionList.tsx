@@ -41,7 +41,7 @@ export function MissionList() {
       </div>
     );
 
-  const avance = (topic: string) => findRun(progress, family!.id, difficulty!.id, "mision", topic);
+  const avance = (topic: string) => findRun(progress, family!.id, difficulty!.id, "mission", topic);
   const done = missions?.filter((m) => avance(m.topic)?.completed).length ?? 0;
   const nextKey = missions?.find((m) => !avance(m.topic)?.completed)?.key;
   const totalStars =

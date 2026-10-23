@@ -295,7 +295,7 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
 }
 
 /** Crea un enemigo en un carril libre. */
-function make(key: number, kind: EnemyId, cmd: string, dif: "facil" | "medio" | "dificil", actuales: Live[]): Live {
+function make(key: number, kind: EnemyId, cmd: string, dif: "easy" | "medium" | "hard", actuales: Live[]): Live {
   const usados = new Set(actuales.filter((e) => e.x > 72).map((e) => e.lane));
   const libres = [0, 1, 2, 3].filter((l) => !usados.has(l));
   const lane = libres.length ? libres[Math.floor(Math.random() * libres.length)] : Math.floor(Math.random() * LANES);

@@ -156,11 +156,11 @@ interface AvatarSkin {
 
 const AVATAR_SKINS: Record<string, AvatarSkin> = {
   tux: { map: TUX_MAP, palette: BASE_PAL },
-  tux_gafas: { map: withRows(TUX_MAP, SHADES), palette: BASE_PAL },
+  tux_shades: { map: withRows(TUX_MAP, SHADES), palette: BASE_PAL },
   tux_ninja: { map: withRows(TUX_MAP, BAND), palette: NINJA_PAL },
-  tux_rey: { map: [...CROWN, ...TUX_MAP], palette: { ...BASE_PAL, C: "#ffd23f" } },
-  tux_oro: { map: TUX_MAP, palette: GOLD_PAL },
-  tux_fantasma: { map: TUX_MAP, palette: GHOST_PAL },
+  tux_king: { map: [...CROWN, ...TUX_MAP], palette: { ...BASE_PAL, C: "#ffd23f" } },
+  tux_gold: { map: TUX_MAP, palette: GOLD_PAL },
+  tux_ghost: { map: TUX_MAP, palette: GHOST_PAL },
 };
 
 export const avatarIds = () => Object.keys(AVATAR_SKINS);

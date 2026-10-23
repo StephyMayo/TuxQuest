@@ -11,7 +11,7 @@
 -- ---------------------------------------------------------------------
 create table if not exists public.shop_items (
   id text primary key,
-  kind text not null check (kind in ('avatar', 'titulo', 'marco', 'boost')),
+  kind text not null check (kind in ('avatar', 'title', 'frame', 'boost')),
   name text not null,
   description text not null default '',
   price int not null check (price >= 0),
@@ -34,37 +34,37 @@ create table if not exists public.inventory (
 
 -- Personalización del perfil
 alter table public.profiles add column if not exists avatar text not null default 'tux';
-alter table public.profiles add column if not exists titulo text not null default 'titulo_novato';
-alter table public.profiles add column if not exists marco  text not null default 'marco_base';
+alter table public.profiles add column if not exists title text not null default 'title_rookie';
+alter table public.profiles add column if not exists frame  text not null default 'frame_basic';
 
 -- ---------------------------------------------------------------------
 -- Contenido del catálogo (debe coincidir con src/data/shop.ts)
 -- ---------------------------------------------------------------------
 insert into public.shop_items (id, kind, name, description, price, stackable, requires, sort) values
-  ('boost_monedas',  'boost',  'Doble moneda',      'Duplica las monedas que ganes en la misión.',          25, true,  0,  1),
-  ('boost_tiempo',   'boost',  'Tiempo extra',      'Suma 15 segundos al reloj del reto actual.',           15, true,  0,  2),
-  ('boost_pista',    'boost',  'Pista gratis',      'Revela la pista de un reto sin pagar monedas.',        18, true,  0,  3),
-  ('boost_escudo',   'boost',  'Escudo de Tux',     'Tu siguiente fallo cuenta como acierto.',              40, true,  0,  4),
+  ('boost_coins',  'boost',  'Doble moneda',      'Duplica las monedas que ganes en la misión.',          25, true,  0,  1),
+  ('boost_time',   'boost',  'Tiempo extra',      'Suma 15 segundos al reloj del reto actual.',           15, true,  0,  2),
+  ('boost_hint',    'boost',  'Pista gratis',      'Revela la pista de un reto sin pagar monedas.',        18, true,  0,  3),
+  ('boost_shield',   'boost',  'Escudo de Tux',     'Tu siguiente fallo cuenta como acierto.',              40, true,  0,  4),
 
   ('tux',            'avatar', 'Tux clásico',       'El pingüino de siempre.',                               0, false, 0, 10),
-  ('tux_gafas',      'avatar', 'Tux hacker',        'Con gafas de sol.',                                    60, false, 0, 11),
+  ('tux_shades',      'avatar', 'Tux hacker',        'Con gafas de sol.',                                    60, false, 0, 11),
   ('tux_ninja',      'avatar', 'Tux ninja',         'Se mueve entre directorios sin hacer ruido.',         120, false, 3, 12),
-  ('tux_rey',        'avatar', 'Tux rey',           'Corona para quien domina su distribución.',           200, false, 6, 13),
-  ('tux_fantasma',   'avatar', 'Tux fantasma',      'Un proceso que nadie puede matar.',                   280, false, 8, 14),
-  ('tux_oro',        'avatar', 'Tux dorado',        'Edición brillante.',                                  350, false, 10, 15),
+  ('tux_king',        'avatar', 'Tux rey',           'Corona para quien domina su distribución.',           200, false, 6, 13),
+  ('tux_ghost',   'avatar', 'Tux fantasma',      'Un proceso que nadie puede matar.',                   280, false, 8, 14),
+  ('tux_gold',        'avatar', 'Tux dorado',        'Edición brillante.',                                  350, false, 10, 15),
 
-  ('titulo_novato',  'titulo', 'Novato',            'Todos empezamos escribiendo ls.',                       0, false, 0, 20),
-  ('titulo_shell',   'titulo', 'Aprendiz de shell', 'Ya no le temes al cursor parpadeante.',                40, false, 0, 21),
-  ('titulo_script',  'titulo', 'Script Kiddie',     'Copias comandos, pero con estilo.',                    90, false, 3, 22),
-  ('titulo_sysadmin','titulo', 'Sysadmin',          'Los servicios te obedecen.',                          180, false, 6, 23),
-  ('titulo_kernel',  'titulo', 'Maestro del Kernel','Compilas por diversión.',                             300, false, 9, 24),
-  ('titulo_root',    'titulo', 'root',              'Con gran poder viene un gran rm -rf.',                500, false, 12, 25),
+  ('title_rookie',  'title', 'Novato',            'Todos empezamos escribiendo ls.',                       0, false, 0, 20),
+  ('title_shell',   'title', 'Aprendiz de shell', 'Ya no le temes al cursor parpadeante.',                40, false, 0, 21),
+  ('title_script',  'title', 'Script Kiddie',     'Copias comandos, pero con estilo.',                    90, false, 3, 22),
+  ('title_sysadmin','title', 'Sysadmin',          'Los servicios te obedecen.',                          180, false, 6, 23),
+  ('title_kernel',  'title', 'Maestro del Kernel','Compilas por diversión.',                             300, false, 9, 24),
+  ('title_root',    'title', 'root',              'Con gran poder viene un gran rm -rf.',                500, false, 12, 25),
 
-  ('marco_base',     'marco',  'Marco estándar',    'Sobrio y funcional, como Debian.',                      0, false, 0, 30),
-  ('marco_bronce',   'marco',  'Marco de bronce',   'Tu primera medalla.',                                  70, false, 0, 31),
-  ('marco_plata',    'marco',  'Marco de plata',    'Brilla sin exagerar.',                                150, false, 4, 32),
-  ('marco_neon',     'marco',  'Marco neón',        'Terminal a las 3 de la madrugada.',                   260, false, 6, 33),
-  ('marco_oro',      'marco',  'Marco de oro',      'Para los que terminan el desafío final.',             320, false, 8, 34)
+  ('frame_basic',     'frame',  'Marco estándar',    'Sobrio y funcional, como Debian.',                      0, false, 0, 30),
+  ('frame_bronze',   'frame',  'Marco de bronce',   'Tu primera medalla.',                                  70, false, 0, 31),
+  ('frame_silver',    'frame',  'Marco de plata',    'Brilla sin exagerar.',                                150, false, 4, 32),
+  ('frame_neon',     'frame',  'Marco neón',        'Terminal a las 3 de la madrugada.',                   260, false, 6, 33),
+  ('frame_gold',      'frame',  'Marco de oro',      'Para los que terminan el desafío final.',             320, false, 8, 34)
 on conflict (id) do update set
   kind = excluded.kind, name = excluded.name, description = excluded.description,
   price = excluded.price, stackable = excluded.stackable, requires = excluded.requires, sort = excluded.sort;
@@ -127,7 +127,7 @@ returns json language plpgsql security definer set search_path = public as $fn$
 declare v_kind text;
 begin
   if auth.uid() is null then raise exception 'Sesion no iniciada'; end if;
-  if p_slot not in ('avatar', 'titulo', 'marco') then raise exception 'Ranura no valida'; end if;
+  if p_slot not in ('avatar', 'title', 'frame') then raise exception 'Ranura no valida'; end if;
 
   select kind into v_kind from shop_items where id = p_item_id and active;
   if v_kind is null or v_kind <> p_slot then raise exception 'Ese objeto no existe'; end if;
@@ -135,13 +135,13 @@ begin
 
   if p_slot = 'avatar' then
     update profiles set avatar = p_item_id where id = auth.uid();
-  elsif p_slot = 'titulo' then
-    update profiles set titulo = p_item_id where id = auth.uid();
+  elsif p_slot = 'title' then
+    update profiles set title = p_item_id where id = auth.uid();
   else
-    update profiles set marco = p_item_id where id = auth.uid();
+    update profiles set frame = p_item_id where id = auth.uid();
   end if;
 
-  return (select json_build_object('avatar', avatar, 'titulo', titulo, 'marco', marco)
+  return (select json_build_object('avatar', avatar, 'title', title, 'frame', frame)
             from profiles where id = auth.uid());
 end;
 $fn$;
@@ -194,9 +194,9 @@ begin
 
   -- El multiplicador se aplica aqui, no en el navegador: solo cuenta si el
   -- jugador tiene de verdad el boost, y se gasta al usarlo.
-  if p_boost = 'boost_monedas' then
+  if p_boost = 'boost_coins' then
     update inventory set qty = qty - 1, updated_at = now()
-     where user_id = auth.uid() and item_id = 'boost_monedas' and qty > 0
+     where user_id = auth.uid() and item_id = 'boost_coins' and qty > 0
     returning qty into v_used;
     if v_used is not null then v_payout := v_payout * 2; end if;
   end if;

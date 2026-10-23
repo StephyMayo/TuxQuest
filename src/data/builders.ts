@@ -22,7 +22,7 @@ export function choice(
   explanation: string,
   scope?: Scope,
 ): Question {
-  return { id, ...base(scope), difficulty: "facil", type: "choice", topic, prompt, answers: [options[0]], options, hint, explanation };
+  return { id, ...base(scope), difficulty: "easy", type: "choice", topic, prompt, answers: [options[0]], options, hint, explanation };
 }
 
 /** Completar el comando (fácil). La plantilla usa ___ para el hueco. */
@@ -36,13 +36,13 @@ export function complete(
   explanation: string,
   scope?: Scope,
 ): Question {
-  return { id, ...base(scope), difficulty: "facil", type: "complete", topic, prompt, template, answers, hint, explanation };
+  return { id, ...base(scope), difficulty: "easy", type: "complete", topic, prompt, template, answers, hint, explanation };
 }
 
 /** Escribir el comando completo (medio o difícil). */
 export function write(
   id: string,
-  difficulty: Exclude<Difficulty, "facil">,
+  difficulty: Exclude<Difficulty, "easy">,
   topic: Topic,
   prompt: string,
   answers: string[],
@@ -64,5 +64,5 @@ export function fix(
   explanation: string,
   scope?: Scope,
 ): Question {
-  return { id, ...base(scope), difficulty: "dificil", type: "fix", topic, prompt, broken, answers, hint, explanation };
+  return { id, ...base(scope), difficulty: "hard", type: "fix", topic, prompt, broken, answers, hint, explanation };
 }

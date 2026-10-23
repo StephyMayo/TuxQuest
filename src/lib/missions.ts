@@ -16,7 +16,7 @@ export interface MissionProgress {
 }
 
 /** De dónde viene una partida guardada: una misión suelta o un capítulo. */
-export type RunMode = "mision" | "historia";
+export type RunMode = "mission" | "story";
 
 /**
  * Una fila de progreso. La familia y la dificultad son campos propios, no

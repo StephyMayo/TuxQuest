@@ -10,10 +10,10 @@ import { Avatar } from "@/components/Avatar";
 import { useRequirePlayer } from "@/components/useRequirePlayer";
 
 const BOOST_ICON: Record<string, React.ReactNode> = {
-  boost_monedas: <PixelCoin size={34} />,
-  boost_tiempo: <PixelClock size={34} />,
-  boost_pista: <PixelBulb size={34} />,
-  boost_escudo: <PixelShield size={34} />,
+  boost_coins: <PixelCoin size={34} />,
+  boost_time: <PixelClock size={34} />,
+  boost_hint: <PixelBulb size={34} />,
+  boost_shield: <PixelShield size={34} />,
 };
 
 export function Shop() {
@@ -164,7 +164,7 @@ export function Shop() {
 function ItemPreview({ item }: { item: ShopItem }) {
   if (item.kind === "boost") return <span className="grid h-14 w-14 place-items-center">{BOOST_ICON[item.id]}</span>;
   if (item.kind === "avatar") return <Avatar id={item.id} size={56} className="shrink-0" />;
-  if (item.kind === "titulo")
+  if (item.kind === "title")
     return (
       <span className="chip bg-bg-2 font-game text-base text-accent" aria-hidden="true">
         {item.name}

@@ -1,16 +1,16 @@
 export type FamilyId = "debian" | "arch" | "redhat" | "suse";
-export type Difficulty = "facil" | "medio" | "dificil";
+export type Difficulty = "easy" | "medium" | "hard";
 export type ChallengeType = "write" | "choice" | "complete" | "fix";
 export type Topic =
-  | "navegacion"
-  | "archivos"
-  | "permisos"
-  | "busqueda"
-  | "paquetes"
-  | "procesos"
-  | "servicios"
-  | "redes"
-  | "sistema";
+  | "navigation"
+  | "files"
+  | "permissions"
+  | "search"
+  | "packages"
+  | "processes"
+  | "services"
+  | "network"
+  | "system";
 
 export interface Family {
   id: FamilyId;
@@ -68,7 +68,7 @@ export interface DifficultyRules {
 // ---------------------------------------------------------------------------
 
 /** Ranura de personalización del perfil (un item equipado por ranura). */
-export type Slot = "avatar" | "titulo" | "marco";
+export type Slot = "avatar" | "title" | "frame";
 export type ItemKind = Slot | "boost";
 
 export interface ShopItem {
@@ -94,9 +94,9 @@ export type Inventory = Record<string, number>;
 /** Lo que el jugador lleva puesto. */
 export interface Loadout {
   avatar: string;
-  titulo: string;
-  marco: string;
+  title: string;
+  frame: string;
 }
 
 /** Boost activado para la partida en curso. */
-export type ActiveBoost = "boost_monedas" | "boost_tiempo" | "boost_pista" | "boost_escudo";
+export type ActiveBoost = "boost_coins" | "boost_time" | "boost_hint" | "boost_shield";

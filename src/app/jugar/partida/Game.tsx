@@ -124,17 +124,17 @@ export function Game() {
     savingRef.current = true;
     const correct = results.filter((r) => r.correct).length;
     // El servidor decide si el x2 se aplica (y lo descuenta); aquí solo avisamos.
-    const doubled = x2 && (inventory.boost_monedas ?? 0) > 0;
+    const doubled = x2 && (inventory.boost_coins ?? 0) > 0;
     backend
       .finishRun(
         family!.id,
         rules.id,
-        "mision",
+        "mission",
         mission.topic,
         correct,
         results.length,
         correct * rules.coins,
-        doubled ? "boost_monedas" : null,
+        doubled ? "boost_coins" : null,
       )
       .then((coins) => {
         setCoins(coins);
@@ -154,7 +154,7 @@ export function Game() {
   }
 
   /** Gasta un boost en el servidor y aplica su efecto si todo salió bien. */
-  async function spendBoost(id: "boost_tiempo" | "boost_pista" | "boost_escudo", apply: () => void) {
+  async function spendBoost(id: "boost_time" | "boost_hint" | "boost_shield", apply: () => void) {
     if (boostBusy) return;
     setBoostError(null);
     setBoostBusy(id);
@@ -171,7 +171,7 @@ export function Game() {
   /** El escudo convierte el fallo actual en acierto. */
   function activateShield() {
     if (!feedback || feedback.correct || shielded) return;
-    spendBoost("boost_escudo", () => {
+    spendBoost("boost_shield", () => {
       setShielded(true);
       setFeedback((f) => (f ? { ...f, correct: true } : f));
       setResults((rs) => rs.map((r, i) => (i === rs.length - 1 ? { ...r, correct: true } : r)));
@@ -284,7 +284,7 @@ export function Game() {
 
   if (!q || !shell) return null;
   const qty = (id: string) => inventory[id] ?? 0;
-  const hasBoosts = ["boost_monedas", "boost_tiempo", "boost_pista", "boost_escudo"].some((id) => qty(id) > 0);
+  const hasBoosts = ["boost_coins", "boost_time", "boost_hint", "boost_shield"].some((id) => qty(id) > 0);
   const urgent = left !== null && left <= 10;
   const timePct = left !== null && rules!.seconds ? (left / rules!.seconds) * 100 : 100;
 
@@ -326,40 +326,40 @@ export function Game() {
         <div className="card-flat mt-4 flex flex-wrap items-center gap-2.5 p-3">
           <span className="font-game text-lg text-muted">Boosts:</span>
 
-          {qty("boost_monedas") > 0 && (
+          {qty("boost_coins") > 0 && (
             <button
               className={`btn btn-sm ${x2 ? "btn-primary" : "btn-ghost"}`}
               aria-pressed={x2}
               onClick={() => setX2((v) => !v)}
               title="Duplica las monedas de esta misión. Se gasta al terminarla."
             >
-              <PixelCoin size={14} /> x2 monedas {x2 ? "· ACTIVO" : `(${qty("boost_monedas")})`}
+              <PixelCoin size={14} /> x2 monedas {x2 ? "· ACTIVO" : `(${qty("boost_coins")})`}
             </button>
           )}
 
-          {qty("boost_tiempo") > 0 && left !== null && (
+          {qty("boost_time") > 0 && left !== null && (
             <button
               className="btn btn-ghost btn-sm"
-              disabled={!!feedback || boostBusy === "boost_tiempo"}
-              onClick={() => spendBoost("boost_tiempo", () => setLeft((l) => (l === null ? l : l + TIME_BOOST)))}
+              disabled={!!feedback || boostBusy === "boost_time"}
+              onClick={() => spendBoost("boost_time", () => setLeft((l) => (l === null ? l : l + TIME_BOOST)))}
             >
-              <PixelClock size={14} /> +{TIME_BOOST}s ({qty("boost_tiempo")})
+              <PixelClock size={14} /> +{TIME_BOOST}s ({qty("boost_time")})
             </button>
           )}
 
-          {qty("boost_pista") > 0 && !hint.shown && !feedback && (
+          {qty("boost_hint") > 0 && !hint.shown && !feedback && (
             <button
               className="btn btn-ghost btn-sm"
-              disabled={boostBusy === "boost_pista"}
-              onClick={() => spendBoost("boost_pista", () => setHint({ shown: true, error: null, busy: false }))}
+              disabled={boostBusy === "boost_hint"}
+              onClick={() => spendBoost("boost_hint", () => setHint({ shown: true, error: null, busy: false }))}
             >
-              <PixelBulb size={14} /> Pista gratis ({qty("boost_pista")})
+              <PixelBulb size={14} /> Pista gratis ({qty("boost_hint")})
             </button>
           )}
 
-          {qty("boost_escudo") > 0 && (
+          {qty("boost_shield") > 0 && (
             <span className="chip font-game text-base text-cyan" title="Al fallar podrás usarlo para salvar el reto">
-              <PixelShield size={14} /> Escudo x{qty("boost_escudo")}
+              <PixelShield size={14} /> Escudo x{qty("boost_shield")}
             </span>
           )}
 
@@ -474,10 +474,10 @@ export function Game() {
                 )}
 
                 {/* El escudo convierte este fallo en acierto */}
-                {!feedback.correct && !shielded && qty("boost_escudo") > 0 && (
-                  <button className="btn btn-cyan mt-4 w-full" disabled={boostBusy === "boost_escudo"} onClick={activateShield}>
+                {!feedback.correct && !shielded && qty("boost_shield") > 0 && (
+                  <button className="btn btn-cyan mt-4 w-full" disabled={boostBusy === "boost_shield"} onClick={activateShield}>
                     <PixelShield size={16} />
-                    {boostBusy === "boost_escudo" ? "Usando…" : `Usar Escudo de Tux (${qty("boost_escudo")}) y salvar el reto`}
+                    {boostBusy === "boost_shield" ? "Usando…" : `Usar Escudo de Tux (${qty("boost_shield")}) y salvar el reto`}
                   </button>
                 )}
 

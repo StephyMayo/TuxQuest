@@ -37,7 +37,7 @@ export function StoryMap() {
 
   // El progreso de la historia es de esta familia y dificultad, no global.
   const avance = (topic: string) =>
-    progress ? findRun(progress, family!.id, difficulty!.id, "historia", topic) : undefined;
+    progress ? findRun(progress, family!.id, difficulty!.id, "story", topic) : undefined;
   const hechos = STORY.filter((c) => avance(c.topic)?.completed).length;
   // Se avanza en orden: un capítulo se abre al superar el anterior.
   const abierto = (i: number) => i === 0 || !!avance(STORY[i - 1].topic)?.completed;

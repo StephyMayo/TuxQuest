@@ -14,9 +14,9 @@
 -- Por si quedara algún valor que no esté en families (no debería, lo
 -- impedía el check), se deja en null antes de poner la clave foránea.
 update public.profiles
-   set family = null
- where family is not null
-   and family not in (select id from public.families);
+   set family_id = null
+ where family_id is not null
+   and family_id not in (select id from public.families);
 
 alter table public.profiles drop constraint if exists profiles_family_valido;
 
@@ -25,7 +25,7 @@ begin
   if not exists (select 1 from pg_constraint where conname = 'profiles_family_fkey') then
     alter table public.profiles
       add constraint profiles_family_fkey
-      foreign key (family) references public.families(id);
+      foreign key (family_id) references public.families(id);
   end if;
 end
 $$;
@@ -40,7 +40,7 @@ begin
     raise exception 'Familia no valida';
   end if;
 
-  update profiles set family = p_family where id = auth.uid();
+  update profiles set family_id = p_family where id = auth.uid();
   return p_family;
 end;
 $fn$;

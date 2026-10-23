@@ -17,7 +17,7 @@ export type GameId =
   | "candado"
   | "rastro"
   | "memoria"
-  | "procesos"
+  | "processes"
   | "tablero"
   | "ruta";
 export type EnemyId = "bicho" | "zombi" | "fuga" | "roto" | "huerfano";
@@ -94,7 +94,7 @@ export const EPILOGUE = {
 export const STORY: Chapter[] = [
   // ---------------- Acto I ----------------
   {
-    topic: "navegacion",
+    topic: "navigation",
     act: 1,
     title: "Despertar en /home",
     place: "El directorio personal",
@@ -121,7 +121,7 @@ export const STORY: Chapter[] = [
     ],
   },
   {
-    topic: "archivos",
+    topic: "files",
     act: 1,
     title: "El taller de archivos",
     place: "/var/taller",
@@ -142,7 +142,7 @@ export const STORY: Chapter[] = [
     enemies: ["bicho", "zombi"],
   },
   {
-    topic: "paquetes",
+    topic: "packages",
     act: 1,
     title: "El almacén de paquetes",
     place: "El depósito del gestor",
@@ -164,7 +164,7 @@ export const STORY: Chapter[] = [
 
   // ---------------- Acto II ----------------
   {
-    topic: "permisos",
+    topic: "permissions",
     act: 2,
     title: "La puerta de permisos",
     place: "La frontera de /etc",
@@ -184,7 +184,7 @@ export const STORY: Chapter[] = [
     enemies: [],
   },
   {
-    topic: "busqueda",
+    topic: "search",
     act: 2,
     title: "El laberinto de datos",
     place: "Los archivos profundos",
@@ -204,7 +204,7 @@ export const STORY: Chapter[] = [
     enemies: [],
   },
   {
-    topic: "sistema",
+    topic: "system",
     act: 2,
     title: "La sala de máquinas",
     place: "El corazón del Núcleo",
@@ -226,12 +226,12 @@ export const STORY: Chapter[] = [
 
   // ---------------- Acto III ----------------
   {
-    topic: "procesos",
+    topic: "processes",
     act: 3,
     title: "Los procesos fantasma",
     place: "La tabla de procesos",
     lesson: "Ver qué se está ejecutando y pararlo.",
-    game: "procesos",
+    game: "processes",
     rounds: 8,
     boss: "bucle",
     intro: [
@@ -247,7 +247,7 @@ export const STORY: Chapter[] = [
     enemies: [],
   },
   {
-    topic: "servicios",
+    topic: "services",
     act: 3,
     title: "Los servicios dormidos",
     place: "La sala de systemd",
@@ -268,7 +268,7 @@ export const STORY: Chapter[] = [
     enemies: [],
   },
   {
-    topic: "redes",
+    topic: "network",
     act: 3,
     title: "El puente de red",
     place: "La salida del Núcleo",
@@ -362,7 +362,7 @@ export const GAMES: Record<GameId, { name: string; rules: string[] }> = {
       "Cuando des con el salto roto, habrás encontrado la avería.",
     ],
   },
-  procesos: {
+  processes: {
     name: "Sala de procesos",
     rules: [
       "Tienes delante la tabla de procesos del Núcleo, como la que saca ps.",
