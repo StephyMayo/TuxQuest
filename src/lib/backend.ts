@@ -3,7 +3,7 @@ import { MISSION_PASS_RATIO, STARTING_COINS } from "@/data/catalog";
 import { DEFAULT_LOADOUT, itemById } from "@/data/shop";
 import { QUESTION_BANK } from "@/data/questions";
 import type { ActiveBoost, Inventory, Loadout, Question, Slot } from "@/data/types";
-import type { MissionProgress } from "./missions";
+import type { MissionProgress, ProgressRow, RunMode } from "./missions";
 import { sha256Hex } from "./sha256";
 
 export interface Player {
@@ -25,9 +25,20 @@ export interface Backend {
   signIn(email: string, password: string): Promise<Player>;
   signOut(): Promise<void>;
   getQuestions(): Promise<Question[]>;
-  getProgress(): Promise<Record<string, MissionProgress>>;
+  /** Todo el progreso del jugador, una fila por familia, dificultad y tema. */
+  getProgress(): Promise<ProgressRow[]>;
   spendCoins(amount: number): Promise<number>;
-  finishMission(key: string, correct: number, total: number, coins: number, boost?: ActiveBoost | null): Promise<number>;
+  /** Guarda una partida terminada, sea una misión o un capítulo de historia. */
+  finishRun(
+    family: string,
+    difficulty: string,
+    mode: RunMode,
+    topic: string,
+    correct: number,
+    total: number,
+    coins: number,
+    boost?: ActiveBoost | null,
+  ): Promise<number>;
   // --- Tienda y perfil ---
   getInventory(): Promise<Inventory>;
   buyItem(itemId: string): Promise<{ coins: number; inventory: Inventory }>;
@@ -188,12 +199,20 @@ class SupabaseBackend implements Backend {
     return (data as QuestionRow[]).map(fromRow);
   }
 
-  async getProgress() {
-    const { data, error } = await this.db.from("mission_progress").select("mission_key, best_correct, best_total, completed");
+  async getProgress(): Promise<ProgressRow[]> {
+    const { data, error } = await this.db
+      .from("family_progress")
+      .select("family_id, difficulty, mode, topic, best_correct, best_total, completed");
     if (error) throw error;
-    return Object.fromEntries(
-      data.map((r) => [r.mission_key, { bestCorrect: r.best_correct, bestTotal: r.best_total, completed: r.completed }]),
-    );
+    return data.map((r) => ({
+      family: r.family_id as string,
+      difficulty: r.difficulty as string,
+      mode: r.mode as RunMode,
+      topic: r.topic as string,
+      bestCorrect: r.best_correct as number,
+      bestTotal: r.best_total as number,
+      completed: r.completed as boolean,
+    }));
   }
 
   async spendCoins(amount: number) {
@@ -202,9 +221,21 @@ class SupabaseBackend implements Backend {
     return data as number;
   }
 
-  async finishMission(key: string, correct: number, total: number, coins: number, boost: ActiveBoost | null = null) {
-    const { data, error } = await this.db.rpc("finish_mission", {
-      p_key: key,
+  async finishRun(
+    family: string,
+    difficulty: string,
+    mode: RunMode,
+    topic: string,
+    correct: number,
+    total: number,
+    coins: number,
+    boost: ActiveBoost | null = null,
+  ) {
+    const { data, error } = await this.db.rpc("finish_run", {
+      p_family: family,
+      p_difficulty: difficulty,
+      p_mode: mode,
+      p_topic: topic,
       p_correct: correct,
       p_total: total,
       p_coins: coins,
@@ -386,9 +417,22 @@ class DemoBackend implements Backend {
     return QUESTION_BANK;
   }
 
-  async getProgress() {
+  async getProgress(): Promise<ProgressRow[]> {
     const u = this.current();
-    return u ? load<Record<string, MissionProgress>>(progressKey(u.id), {}) : {};
+    if (!u) return [];
+    const guardado = load<ProgressRow[] | Record<string, MissionProgress>>(progressKey(u.id), []);
+    if (Array.isArray(guardado)) return guardado;
+    // Partidas guardadas con el formato viejo, "familia:dificultad:tema".
+    // Las del modo historia iban como "historia:<tema>", sin familia, así
+    // que no hay de dónde sacarla y se descartan.
+    const migrado: ProgressRow[] = [];
+    for (const [clave, v] of Object.entries(guardado)) {
+      const [family, difficulty, topic] = clave.split(":");
+      if (!topic || !["debian", "arch", "redhat", "suse"].includes(family)) continue;
+      migrado.push({ family, difficulty, mode: "mision", topic, ...v });
+    }
+    save(progressKey(u.id), migrado);
+    return migrado;
   }
 
   async spendCoins(amount: number) {
@@ -399,16 +443,32 @@ class DemoBackend implements Backend {
     return u.coins;
   }
 
-  async finishMission(key: string, correct: number, total: number, coins: number, boost: ActiveBoost | null = null) {
+  async finishRun(
+    family: string,
+    difficulty: string,
+    mode: RunMode,
+    topic: string,
+    correct: number,
+    total: number,
+    coins: number,
+    boost: ActiveBoost | null = null,
+  ) {
     const u = this.mustCurrent();
     const all = await this.getProgress();
-    const prev = all[key];
-    const better = !prev || correct / total > prev.bestCorrect / prev.bestTotal;
-    all[key] = {
-      bestCorrect: better ? correct : prev.bestCorrect,
-      bestTotal: better ? total : prev.bestTotal,
+    const i = all.findIndex((r) => r.family === family && r.difficulty === difficulty && r.mode === mode && r.topic === topic);
+    const prev = i >= 0 ? all[i] : null;
+    const mejor = !prev || correct / total > prev.bestCorrect / prev.bestTotal;
+    const fila: ProgressRow = {
+      family,
+      difficulty,
+      mode,
+      topic,
+      bestCorrect: mejor ? correct : prev!.bestCorrect,
+      bestTotal: mejor ? total : prev!.bestTotal,
       completed: (prev?.completed ?? false) || correct / total >= MISSION_PASS_RATIO,
     };
+    if (i >= 0) all[i] = fila;
+    else all.push(fila);
     save(progressKey(u.id), all);
     let payout = coins;
     if (boost === "boost_monedas" && (u.inventory[boost] ?? 0) > 0) {
@@ -429,7 +489,7 @@ class DemoBackend implements Backend {
     const item = itemById(itemId);
     if (!item) throw new ShopError("Ese objeto ya no está disponible.");
     if (item.requires) {
-      const done = Object.values(await this.getProgress()).filter((p) => p.completed).length;
+      const done = (await this.getProgress()).filter((p) => p.completed).length;
       if (done < item.requires) throw new ShopError("Todavía no has desbloqueado ese objeto.");
     }
     if (!item.stackable && (u.inventory[itemId] ?? 0) > 0) throw new ShopError("Ya tienes ese objeto.");

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ACTS, BOSSES, GAMES, STORY, storyKey } from "@/data/story";
-import type { MissionProgress } from "@/lib/missions";
+import { ACTS, BOSSES, GAMES, STORY } from "@/data/story";
+import { findRun, type ProgressRow } from "@/lib/missions";
 import { BossSprite, EnemySprite } from "@/components/story/Enemies";
 import { FamilyBadge } from "@/components/Logos";
 import { PixelLock, PixelTux, Stars, starsFor } from "@/components/Pixel";
@@ -13,7 +13,7 @@ import { useRequirePlayer } from "@/components/useRequirePlayer";
 export function StoryMap() {
   const { player, backend } = useRequirePlayer();
   const { family, difficulty, valid, query } = useGameParams();
-  const [progress, setProgress] = useState<Record<string, MissionProgress> | null>(null);
+  const [progress, setProgress] = useState<ProgressRow[] | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -35,9 +35,12 @@ export function StoryMap() {
       </div>
     );
 
-  const hechos = STORY.filter((c) => progress?.[storyKey(c.topic)]?.completed).length;
+  // El progreso de la historia es de esta familia y dificultad, no global.
+  const avance = (topic: string) =>
+    progress ? findRun(progress, family!.id, difficulty!.id, "historia", topic) : undefined;
+  const hechos = STORY.filter((c) => avance(c.topic)?.completed).length;
   // Se avanza en orden: un capítulo se abre al superar el anterior.
-  const abierto = (i: number) => i === 0 || !!progress?.[storyKey(STORY[i - 1].topic)]?.completed;
+  const abierto = (i: number) => i === 0 || !!avance(STORY[i - 1].topic)?.completed;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -88,7 +91,7 @@ export function StoryMap() {
 
             <ol className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {STORY.map((c, i) => ({ c, i })).filter(({ c }) => c.act === act).map(({ c, i }) => {
-                const p = progress[storyKey(c.topic)];
+                const p = avance(c.topic);
                 const libre = abierto(i);
                 const stars = p ? starsFor(p.bestCorrect / p.bestTotal) : 0;
                 const siguiente = libre && !p?.completed;

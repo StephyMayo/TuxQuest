@@ -126,14 +126,23 @@ export function Game() {
     // El servidor decide si el x2 se aplica (y lo descuenta); aquí solo avisamos.
     const doubled = x2 && (inventory.boost_monedas ?? 0) > 0;
     backend
-      .finishMission(mission.key, correct, results.length, correct * rules.coins, doubled ? "boost_monedas" : null)
+      .finishRun(
+        family!.id,
+        rules.id,
+        "mision",
+        mission.topic,
+        correct,
+        results.length,
+        correct * rules.coins,
+        doubled ? "boost_monedas" : null,
+      )
       .then((coins) => {
         setCoins(coins);
         setSaved({ coins, doubled });
         if (doubled) backend.getInventory().then(setInventory).catch(() => {});
       })
       .catch(() => setSaveError(true));
-  }, [finished, mission, rules, results, backend, setCoins, x2, inventory, setInventory]);
+  }, [finished, mission, rules, results, backend, setCoins, x2, inventory, setInventory, family]);
 
   function next() {
     setFeedback(null);

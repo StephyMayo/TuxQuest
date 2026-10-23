@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MISSION_PASS_RATIO, MISSION_SIZE } from "@/data/catalog";
-import { missionsFor, type Mission, type MissionProgress } from "@/lib/missions";
+import { findRun, missionsFor, type Mission, type ProgressRow } from "@/lib/missions";
 import { Stars, PixelTux, starsFor } from "@/components/Pixel";
 import { FamilyBadge } from "@/components/Logos";
 import { MascotPortrait } from "@/components/Mascot";
@@ -15,7 +15,7 @@ export function MissionList() {
   const { player, backend } = useRequirePlayer();
   const { family, distro, difficulty, valid, query } = useGameParams();
   const [missions, setMissions] = useState<Mission[] | null>(null);
-  const [progress, setProgress] = useState<Record<string, MissionProgress>>({});
+  const [progress, setProgress] = useState<ProgressRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,9 +41,14 @@ export function MissionList() {
       </div>
     );
 
-  const done = missions?.filter((m) => progress[m.key]?.completed).length ?? 0;
-  const nextKey = missions?.find((m) => !progress[m.key]?.completed)?.key;
-  const totalStars = missions?.reduce((s, m) => s + (progress[m.key] ? starsFor(progress[m.key].bestCorrect / progress[m.key].bestTotal) : 0), 0) ?? 0;
+  const avance = (topic: string) => findRun(progress, family!.id, difficulty!.id, "mision", topic);
+  const done = missions?.filter((m) => avance(m.topic)?.completed).length ?? 0;
+  const nextKey = missions?.find((m) => !avance(m.topic)?.completed)?.key;
+  const totalStars =
+    missions?.reduce((s, m) => {
+      const p = avance(m.topic);
+      return s + (p ? starsFor(p.bestCorrect / p.bestTotal) : 0);
+    }, 0) ?? 0;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -86,7 +91,7 @@ export function MissionList() {
 
       <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {missions?.map((m, i) => {
-          const p = progress[m.key];
+          const p = avance(m.topic);
           const stars = p ? starsFor(p.bestCorrect / p.bestTotal) : 0;
           const isNext = m.key === nextKey;
           const final = m.topic === "final";

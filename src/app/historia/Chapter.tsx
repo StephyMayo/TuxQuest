@@ -13,7 +13,6 @@ import {
   STORY,
   chapterByTopic,
   chapterIndex,
-  storyKey,
 } from "@/data/story";
 import type { Question } from "@/data/types";
 import { PixelCoin, PixelTux, Stars, starsFor } from "@/components/Pixel";
@@ -77,13 +76,21 @@ export function Chapter() {
     if (phase !== "final" || !result || !chapter || savingRef.current) return;
     savingRef.current = true;
     backend
-      .finishMission(storyKey(chapter.topic), result.score, Math.max(1, result.total), result.score * COINS_PER_WIN)
+      .finishRun(
+        family!.id,
+        difficulty!.id,
+        "historia",
+        chapter.topic,
+        result.score,
+        Math.max(1, result.total),
+        result.score * COINS_PER_WIN,
+      )
       .then((coins) => {
         setCoins(coins);
         setSaved({ coins });
       })
       .catch(() => setSaved(null));
-  }, [phase, result, chapter, backend, setCoins]);
+  }, [phase, result, chapter, backend, setCoins, family, difficulty]);
 
   function reiniciar() {
     savingRef.current = false;

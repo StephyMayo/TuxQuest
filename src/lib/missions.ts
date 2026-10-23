@@ -15,7 +15,31 @@ export interface MissionProgress {
   completed: boolean;
 }
 
+/** De dónde viene una partida guardada: una misión suelta o un capítulo. */
+export type RunMode = "mision" | "historia";
+
+/**
+ * Una fila de progreso. La familia y la dificultad son campos propios, no
+ * trozos de un texto: así el progreso de cada familia se guarda aparte y no
+ * se pisa al cambiar de una a otra.
+ */
+export interface ProgressRow extends MissionProgress {
+  family: string;
+  difficulty: string;
+  mode: RunMode;
+  topic: string;
+}
+
+/** Identificador de la misión dentro de su familia y dificultad. */
 export const missionKey = (family: FamilyId, difficulty: Difficulty, topic: string) => `${family}:${difficulty}:${topic}`;
+
+/** Busca una fila concreta dentro de todo el progreso del jugador. */
+export const findRun = (rows: ProgressRow[], family: string, difficulty: string, mode: RunMode, topic: string) =>
+  rows.find((r) => r.family === family && r.difficulty === difficulty && r.mode === mode && r.topic === topic);
+
+/** Filas de una familia y dificultad concretas. */
+export const runsOf = (rows: ProgressRow[], family: string, difficulty: string, mode: RunMode) =>
+  rows.filter((r) => r.family === family && r.difficulty === difficulty && r.mode === mode);
 
 /**
  * Preguntas disponibles para una familia y dificultad: las comunes más las

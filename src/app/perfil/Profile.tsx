@@ -52,23 +52,18 @@ export function Profile() {
     if (!player) return;
     backend
       .getProgress()
-      .then((p) => {
-        const all = Object.values(p);
-        // La clave de mision es "familia:dificultad:tema": de ahi sale
-        // en que familia ha superado mas misiones.
-        const byFamily = new Map<string, number>();
-        for (const [key, m] of Object.entries(p)) {
-          if (!m.completed) continue;
-          const fam = key.split(":")[0];
-          // Las claves del modo historia son "historia:<tema>": no son familias.
-          if (!familyById(fam)) continue;
-          byFamily.set(fam, (byFamily.get(fam) ?? 0) + 1);
+      .then((filas) => {
+        // La familia ya es un campo propio de cada fila: se cuenta directo.
+        const porFamilia = new Map<string, number>();
+        for (const f of filas) {
+          if (!f.completed) continue;
+          porFamilia.set(f.family, (porFamilia.get(f.family) ?? 0) + 1);
         }
-        const top = [...byFamily.entries()].sort((a, b) => b[1] - a[1])[0];
+        const top = [...porFamilia.entries()].sort((a, b) => b[1] - a[1])[0];
         setStats({
-          done: all.filter((m) => m.completed).length,
-          stars: all.reduce((s, m) => s + starsFor(m.bestCorrect / m.bestTotal), 0),
-          played: all.length,
+          done: filas.filter((f) => f.completed).length,
+          stars: filas.reduce((s, f) => s + starsFor(f.bestCorrect / f.bestTotal), 0),
+          played: filas.length,
           family: top ? (familyById(top[0])?.name ?? top[0]) : "aún sin elegir",
         });
       })

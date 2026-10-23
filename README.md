@@ -24,8 +24,8 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 
 1. Crea un proyecto en https://supabase.com (plan gratuito).
 2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
-   `supabase/shop.sql`, `supabase/avatares.sql`, `supabase/avatares-2.sql` y
-   `supabase/perfil.sql`. Los cuatro últimos añaden la tienda, los avatares y la edición
+   `supabase/shop.sql`, `supabase/avatares.sql`, `supabase/avatares-2.sql`,
+   `supabase/perfil.sql` y `supabase/progreso.sql`. Los cinco últimos añaden la tienda, los avatares y la edición
    del perfil; todos se pueden volver a ejecutar sin romper nada.
 3. En **Authentication > Sign In / Providers > Email**, desactiva *Confirm email* mientras desarrollan
    (si lo dejas activo, el jugador debe confirmar su correo antes de iniciar sesión; la app ya muestra ese aviso).
@@ -85,7 +85,29 @@ supabase/
   avatares.sql          Avatares ilustrados del catálogo
   avatares-2.sql        18 avatares más y set_username()
   perfil.sql            Familia elegida en el perfil y set_family()
+  progreso.sql          Tabla family_progress y finish_run()
 ```
+
+## Cómo se guarda el progreso
+
+Cada partida terminada es una fila de `family_progress`, con **la familia, la dificultad,
+el modo y el tema como columnas propias**, no metidos dentro de un texto:
+
+| Columna | Para qué |
+| --- | --- |
+| `family_id` | Clave foránea a `families`. El progreso de cada familia va aparte |
+| `difficulty` | Fácil, Medio o Difícil |
+| `mode` | `mision` o `historia` |
+| `topic` | El tema, o `final` para el desafío final |
+| `best_correct` / `best_total` | Solo se guarda el mejor intento, comparando porcentajes |
+| `completed` | Una vez superado no se pierde por un intento peor |
+
+Así, cambiar de familia no pisa nada: cada una conserva lo suyo. La versión anterior
+guardaba todo en un único texto (`debian:facil:redes`), que además dejaba el modo
+historia sin familia y por eso sí se pisaba al cambiar.
+
+Solo escribe `finish_run()`, que valida familia, dificultad, modo, tema y monedas antes
+de tocar nada. El cliente no tiene permisos de `insert` ni `update` sobre la tabla.
 
 ## Reglas de dificultad (punto 5.3)
 
@@ -209,8 +231,8 @@ capítulos que tiran del banco mezclan comandos de los anteriores como repaso, 7
 El contenido que no sale del banco de preguntas —patrones, procesos, servicios y la
 ruta de red— está en `src/data/minijuegos.ts`.
 
-El progreso se guarda con `finish_mission()`, con la clave `historia:<tema>`, así que
-no hace falta ninguna tabla nueva.
+El progreso se guarda en `family_progress` con `mode = 'historia'`, separado por familia
+y dificultad igual que las misiones.
 
 ## Pendiente para las siguientes entregas
 

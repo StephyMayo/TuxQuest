@@ -29,7 +29,7 @@ export function Shop() {
     if (!player) return;
     backend
       .getProgress()
-      .then((p) => setDone(Object.values(p).filter((m) => m.completed).length))
+      .then((filas) => setDone(filas.filter((f) => f.completed).length))
       .catch(() => setDone(0));
   }, [backend, player]);
 
