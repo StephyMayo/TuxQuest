@@ -1,13 +1,3 @@
-/**
- * Modo historia: «El Camino de la Terminal».
- *
- * Nueve capítulos en tres actos. Cada uno usa el mismo tema que las misiones
- * -de ahí salen los comandos- y un minijuego distinto, para que aprender no
- * sea repetir siempre lo mismo.
- *
- * El capítulo se juega en cuatro pasos: historia, cómo se juega, minijuego y
- * desenlace.
- */
 import type { Topic } from "./types.ts";
 
 export type GameId =
@@ -23,7 +13,6 @@ export type GameId =
 export type EnemyId = "bicho" | "zombi" | "fuga" | "roto" | "huerfano";
 export type BossId = "panico" | "bucle" | "disco" | "root";
 
-/** Objetivo del minijuego de terminal, comprobado contra la shell simulada. */
 export type Goal =
   | { kind: "ran"; prefix: string; text: string }
   | { kind: "cwd"; path: string; text: string }
@@ -31,24 +20,23 @@ export type Goal =
   | { kind: "gone"; path: string; text: string };
 
 export interface Chapter {
-  /** Coincide con el tema de las misiones: de ahí salen los comandos. */
   topic: Topic;
   act: number;
   title: string;
-  /** Dónde ocurre, se muestra bajo el título. */
+
   place: string;
-  /** Lo que el jugador aprende, en una línea. */
+
   lesson: string;
   game: GameId;
-  /** Narración antes de jugar. */
+
   intro: string[];
-  /** Narración al superarlo. */
+
   outro: string[];
   enemies: EnemyId[];
   boss?: BossId;
-  /** Rondas, enemigos o parejas, según el minijuego. */
+
   rounds: number;
-  /** Solo para el minijuego de terminal. */
+
   goals?: Goal[];
 }
 
@@ -92,7 +80,6 @@ export const EPILOGUE = {
 };
 
 export const STORY: Chapter[] = [
-  // ---------------- Acto I ----------------
   {
     topic: "navigation",
     act: 1,
@@ -162,7 +149,6 @@ export const STORY: Chapter[] = [
     enemies: [],
   },
 
-  // ---------------- Acto II ----------------
   {
     topic: "permissions",
     act: 2,
@@ -224,7 +210,6 @@ export const STORY: Chapter[] = [
     enemies: [],
   },
 
-  // ---------------- Acto III ----------------
   {
     topic: "processes",
     act: 3,
@@ -296,7 +281,6 @@ export const ACTS: Record<number, { title: string; subtitle: string }> = {
   3: { title: "Acto III · El Núcleo", subtitle: "Procesos, servicios y la salida al mundo." },
 };
 
-/** Cómo se juega cada minijuego, para la pantalla previa. */
 export const GAMES: Record<GameId, { name: string; rules: string[] }> = {
   terminal: {
     name: "Terminal guiada",
@@ -372,7 +356,6 @@ export const GAMES: Record<GameId, { name: string; rules: string[] }> = {
   },
 };
 
-/** Lo que distingue a cada enemigo en el minijuego de defensa. */
 export interface EnemyKind {
   id: EnemyId;
   name: string;
@@ -418,8 +401,5 @@ export const BOSSES: Record<BossId, BossKind> = {
 
 export const chapterByTopic = (topic: string) => STORY.find((c) => c.topic === topic);
 export const chapterIndex = (topic: string) => STORY.findIndex((c) => c.topic === topic);
-export const storyKey = (topic: string) => `historia:${topic}`;
-/** Monedas por acierto. */
+
 export const COINS_PER_WIN = 4;
-/** Aciertos necesarios, en tanto por uno, para superar un capítulo. */
-export const PASS_RATIO = 0.7;

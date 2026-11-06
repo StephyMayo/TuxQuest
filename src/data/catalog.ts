@@ -1,4 +1,4 @@
-import type { Difficulty, DifficultyRules, Distro, Family, FamilyId, Topic } from "./types.ts";
+import type { DifficultyRules, Distro, Family, FamilyId, Topic } from "./types.ts";
 
 export const FAMILIES: Family[] = [
   {
@@ -99,4 +99,3 @@ export const STARTING_COINS = 20;
 export const familyById = (id: string) => FAMILIES.find((f) => f.id === id);
 export const distrosOf = (familyId: FamilyId) => DISTROS.filter((d) => d.familyId === familyId);
 export const difficultyById = (id: string) => DIFFICULTIES.find((d) => d.id === id);
-export const isDifficulty = (v: string): v is Difficulty => DIFFICULTIES.some((d) => d.id === v);

@@ -1,14 +1,3 @@
--- =====================================================================
--- TuxQuest · Más avatares para la tienda y nombre de usuario editable
--- Ejecutar DESPUÉS de avatares.sql.
--- Supabase > SQL Editor > New query > pegar y Run.
--- Es idempotente: puedes volver a ejecutarlo sin romper nada.
--- =====================================================================
-
--- ---------------------------------------------------------------------
--- 18 avatares nuevos. Los precios viven aquí porque buy_item() los lee
--- de la base de datos: lo que manda el navegador nunca se usa para cobrar.
--- ---------------------------------------------------------------------
 insert into public.shop_items (id, kind, name, description, price, stackable, requires, sort) values
   ('av_squire', 'avatar', 'Escudero verde', 'Pequeño, con casco y bastón. Todo el mundo empieza así.', 120, false, 0, 20),
   ('av_marine', 'avatar', 'Marine orbital', 'Armadura blanca y rifle. Despliegue limpio, salida limpia.', 150, false, 0, 21),
@@ -32,9 +21,6 @@ on conflict (id) do update set
   kind = excluded.kind, name = excluded.name, description = excluded.description,
   price = excluded.price, stackable = excluded.stackable, requires = excluded.requires, sort = excluded.sort;
 
--- ---------------------------------------------------------------------
--- Cambiar el nombre de usuario
--- ---------------------------------------------------------------------
 create or replace function public.set_username(p_username text)
 returns text language plpgsql security definer set search_path = public as $fn$
 declare v_nuevo text;
@@ -42,8 +28,7 @@ begin
   if auth.uid() is null then raise exception 'Sesion no iniciada'; end if;
 
   v_nuevo := btrim(p_username);
-  -- Las mismas reglas que valida el formulario, repetidas aqui porque el
-  -- navegador se puede saltar.
+
   if v_nuevo !~ '^[A-Za-z0-9_]{3,20}$' then
     raise exception 'Nombre no valido';
   end if;

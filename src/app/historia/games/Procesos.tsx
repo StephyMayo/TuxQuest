@@ -3,20 +3,14 @@
 import { useMemo, useRef, useState } from "react";
 import { PROCESOS, type Proceso } from "@/data/minijuegos";
 import { BOSSES } from "@/data/story";
-import { shuffled } from "@/lib/story";
+import { shuffled } from "@/lib/shuffle";
 import { BossSprite } from "@/components/story/Enemies";
 import type { GameProps } from "./types";
 
-/**
- * Sala de procesos: cerrar los que sobran sin tocar los del sistema.
- *
- * Se escribe `kill <pid>` de verdad, que es lo que se hace en una máquina.
- * Matar un proceso del sistema resta, para que no valga cerrarlos todos.
- */
 export function Procesos({ chapter, onFinish }: GameProps) {
   const tabla = useMemo(() => {
     const lista = shuffled(PROCESOS).sort((a, b) => a.pid - b.pid);
-    // El jefe del capítulo es un proceso más de la tabla, el que no se deja.
+
     if (!chapter.boss) return lista;
     const b = BOSSES[chapter.boss];
     return [
@@ -94,7 +88,6 @@ export function Procesos({ chapter, onFinish }: GameProps) {
       >
         <span style={{ width: `${((sobran - restantes) / sobran) * 100}%` }} />
       </div>
-
       <div className="card crt mt-4 overflow-x-auto p-4">
         <table className="w-full min-w-[560px] font-crt text-lg">
           <thead>
@@ -128,7 +121,6 @@ export function Procesos({ chapter, onFinish }: GameProps) {
           </tbody>
         </table>
       </div>
-
       {chapter.boss && !muertos.includes(9999) && (
         <div className="card-flat mt-4 flex items-center gap-3 p-3">
           <BossSprite id={chapter.boss} size={44} />
@@ -138,7 +130,6 @@ export function Procesos({ chapter, onFinish }: GameProps) {
           </div>
         </div>
       )}
-
       <form onSubmit={submit} className="mt-4 flex items-center gap-3">
         <span className="font-crt text-xl text-[var(--term-prompt)]">$</span>
         <label htmlFor="kill" className="sr-only">
@@ -158,7 +149,6 @@ export function Procesos({ chapter, onFinish }: GameProps) {
           Enter
         </button>
       </form>
-
       <p className="mt-3 min-h-[1.5rem] font-game text-lg" aria-live="polite">
         {aviso ?? "Cierra los procesos colgados y los zombis. Los del sistema se quedan."}
       </p>

@@ -1,24 +1,17 @@
-/**
- * Guías de cada familia de distribuciones. Aparecen al fallar un reto para
- * explicar el error con sus propias palabras.
- *
- * Los retratos están en `public/guias/` como imágenes pixel art, una por
- * familia: cada distribución usa la guía de la suya.
- */
 import type { FamilyId } from "./types.ts";
 
 export interface Guide {
   familyId: FamilyId;
   name: string;
-  /** Una línea que la describe, se muestra bajo el nombre. */
+
   role: string;
-  /** Color de la marca, para el nombre y el texto del bocadillo. */
+
   color: string;
-  /** Tamaño del retrato de busto, para reservar el hueco y evitar saltos. */
+
   bust: { w: number; h: number };
-  /** Frases al fallar un reto. */
+
   miss: string[];
-  /** Frases cuando se acaba el tiempo. */
+
   timeout: string[];
 }
 
@@ -82,13 +75,8 @@ export const GUIDES: Guide[] = [
 
 const BY_FAMILY = new Map(GUIDES.map((g) => [g.familyId, g]));
 
-/** Guía de una familia. Si no hay, usa la de Debian. */
 export const guideFor = (familyId: string): Guide => BY_FAMILY.get(familyId as FamilyId) ?? GUIDES[0];
 
-/**
- * Elige una frase de forma estable: con el mismo índice sale la misma frase,
- * así el texto no cambia entre el servidor y el navegador.
- */
 export const phraseFor = (g: Guide, timedOut: boolean, seed: number) => {
   const list = timedOut ? g.timeout : g.miss;
   return list[Math.abs(seed) % list.length];

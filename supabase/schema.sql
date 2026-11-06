@@ -1,10 +1,3 @@
--- =====================================================================
--- TuxQuest · Esquema de base de datos para Supabase (PostgreSQL)
--- Ejecutar en: Supabase > SQL Editor > New query > pegar y Run.
--- Después ejecutar seed.sql para cargar familias, categorías y preguntas.
--- =====================================================================
-
--- Familias y categorías (RNF-09: el contenido vive en la base de datos)
 create table if not exists public.families (
   id text primary key,
   name text not null,
@@ -19,7 +12,6 @@ create table if not exists public.distros (
   sort int not null default 0
 );
 
--- Perfil del jugador (las contraseñas las gestiona Supabase Auth, RNF-04)
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text not null unique check (char_length(username) between 3 and 20),
@@ -28,11 +20,10 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
--- Banco de preguntas (RF-07, RF-16)
 create table if not exists public.questions (
   id text primary key,
-  family_id text references public.families(id),          -- null = común a todas las familias
-  distro_id text references public.distros(id),           -- null = toda la familia
+  family_id text references public.families(id),
+  distro_id text references public.distros(id),
   difficulty text not null check (difficulty in ('easy', 'medium', 'hard')),
   type text not null check (type in ('write', 'choice', 'complete', 'fix')),
   topic text not null,
@@ -49,7 +40,6 @@ create table if not exists public.questions (
 );
 create index if not exists questions_filter_idx on public.questions (difficulty, family_id, distro_id) where active;
 
--- Progreso de misiones (RF-06)
 create table if not exists public.mission_progress (
   user_id uuid not null references public.profiles(id) on delete cascade,
   mission_key text not null,
@@ -60,9 +50,6 @@ create table if not exists public.mission_progress (
   primary key (user_id, mission_key)
 );
 
--- ---------------------------------------------------------------------
--- Crear el perfil automáticamente al registrarse
--- ---------------------------------------------------------------------
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -77,9 +64,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- ---------------------------------------------------------------------
--- Funciones (RPC). Las monedas solo cambian a través de estas funciones.
--- ---------------------------------------------------------------------
 create or replace function public.username_taken(p_username text)
 returns boolean language sql security definer set search_path = public stable as $$
   select exists (select 1 from profiles where lower(username) = lower(p_username));
@@ -104,7 +88,7 @@ declare v_coins int;
 begin
   if auth.uid() is null then raise exception 'Sesión no iniciada'; end if;
   if p_total <= 0 or p_total > 20 or p_correct < 0 or p_correct > p_total then raise exception 'Resultado no válido'; end if;
-  -- Límite: como máximo 20 monedas por acierto (dificultad difícil)
+
   if p_coins < 0 or p_coins > p_correct * 20 then raise exception 'Monedas no válidas'; end if;
 
   insert into mission_progress as mp (user_id, mission_key, best_correct, best_total, completed)
@@ -122,9 +106,6 @@ begin
 end;
 $$;
 
--- ---------------------------------------------------------------------
--- Seguridad a nivel de fila (RLS)
--- ---------------------------------------------------------------------
 alter table public.families enable row level security;
 alter table public.distros enable row level security;
 alter table public.profiles enable row level security;
@@ -146,8 +127,6 @@ create policy "profiles_read_own" on public.profiles for select using (auth.uid(
 drop policy if exists "progress_read_own" on public.mission_progress;
 create policy "progress_read_own" on public.mission_progress for select using (auth.uid() = user_id);
 
--- No hay políticas de insert/update para el cliente: monedas y progreso
--- solo se modifican con spend_coins() y finish_mission().
 grant usage on schema public to anon, authenticated;
 grant select on public.families, public.distros, public.questions to anon, authenticated;
 grant select on public.profiles, public.mission_progress to authenticated;

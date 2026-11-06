@@ -35,11 +35,10 @@ export function StoryMap() {
       </div>
     );
 
-  // El progreso de la historia es de esta familia y dificultad, no global.
   const avance = (topic: string) =>
     progress ? findRun(progress, family!.id, difficulty!.id, "story", topic) : undefined;
   const hechos = STORY.filter((c) => avance(c.topic)?.completed).length;
-  // Se avanza en orden: un capítulo se abre al superar el anterior.
+
   const abierto = (i: number) => i === 0 || !!avance(STORY[i - 1].topic)?.completed;
 
   return (
@@ -47,7 +46,6 @@ export function StoryMap() {
       <Link href={`/jugar?${query}`} className="btn btn-ghost btn-sm">
         ◀ Cambiar selección
       </Link>
-
       <div className="card mt-6 flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
         <FamilyBadge id={family!.id} name={family!.name} color={family!.color} size={56} />
         <div className="flex-1">
@@ -77,7 +75,6 @@ export function StoryMap() {
           </div>
         </div>
       </div>
-
       {error && <p className="mt-6 text-bad">No se pudo cargar tu progreso. Revisa tu conexión.</p>}
       {!progress && !error && <p className="mt-6 font-game text-xl text-muted">Cargando la historia…</p>}
 
@@ -88,7 +85,6 @@ export function StoryMap() {
               {ACTS[act].title.toUpperCase()}
             </h2>
             <p className="mt-2 text-muted">{ACTS[act].subtitle}</p>
-
             <ol className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {STORY.map((c, i) => ({ c, i })).filter(({ c }) => c.act === act).map(({ c, i }) => {
                 const p = avance(c.topic);
@@ -115,7 +111,6 @@ export function StoryMap() {
                         <PixelTux size={26} bob /> ¡Aquí!
                       </span>
                     )}
-
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className="text-2xl font-semibold leading-tight">{c.title}</h3>
@@ -123,21 +118,17 @@ export function StoryMap() {
                       </div>
                       {c.boss && <BossSprite id={c.boss} size={44} className="shrink-0" />}
                     </div>
-
                     <p className="mt-2 flex-1 text-muted">{c.lesson}</p>
-
                     <div className="mt-3 flex items-center gap-2">
                       {c.enemies.map((e) => (
                         <EnemySprite key={e} id={e} size={22} />
                       ))}
                       <span className="ml-auto chip font-game text-sm text-cyan">{GAMES[c.game].name}</span>
                     </div>
-
                     <div className="mt-3 flex items-center justify-between">
                       <Stars count={stars} size={20} />
                       {c.boss && <span className="font-game text-base text-pink">{BOSSES[c.boss].name}</span>}
                     </div>
-
                     {libre ? (
                       <Link
                         href={`/historia/capitulo?${query}&mision=${c.topic}`}

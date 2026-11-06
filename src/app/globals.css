@@ -1,15 +1,11 @@
 @import "tailwindcss";
 
-/* ================================================================
-   TuxQuest · estilo videojuego retro / pixel
-   ================================================================ */
-
 :root {
   --bg: #120c26;
   --bg-2: #1a1236;
   --panel: #231a47;
   --panel-2: #2e2459;
-  --ink: #06030f; /* bordes y sombras de píxel */
+  --ink: #06030f;
   --line: #3d3270;
   --text: #f3efff;
   --muted: #bcb3e0;
@@ -54,7 +50,7 @@ html {
 
 body {
   background-color: var(--bg);
-  /* cielo estrellado de píxeles */
+
   background-image:
     radial-gradient(2px 2px at 20px 30px, #ffffff55 50%, transparent 51%),
     radial-gradient(2px 2px at 140px 90px, #ffd23f55 50%, transparent 51%),
@@ -66,7 +62,7 @@ body {
   background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  /* las fuentes pixel dibujan "fi" como un solo glifo poco legible */
+
   font-variant-ligatures: none;
   font-feature-settings: "liga" 0, "clig" 0;
 }
@@ -84,7 +80,6 @@ body {
 }
 
 @layer components {
-  /* Título pixel con sombra dura */
   .pixel-title {
     font-family: var(--font-press-start), monospace;
     line-height: 1.35;
@@ -92,7 +87,6 @@ body {
     text-shadow: 4px 4px 0 var(--ink);
   }
 
-  /* Caja pixel: borde grueso + sombra dura + bisel */
   .card {
     background: var(--panel);
     border: 3px solid var(--ink);
@@ -107,7 +101,6 @@ body {
     box-shadow: inset 2px 2px 0 #ffffff12, inset -2px -2px 0 #00000040;
   }
 
-  /* Botones arcade */
   .btn {
     position: relative;
     display: inline-flex;
@@ -187,7 +180,6 @@ body {
     outline-offset: 0;
   }
 
-  /* Etiqueta tipo chip */
   .chip {
     display: inline-flex;
     align-items: center;
@@ -200,7 +192,6 @@ body {
     box-shadow: 2px 2px 0 var(--ink);
   }
 
-  /* Barra de progreso segmentada */
   .pixel-bar {
     height: 14px;
     border: 3px solid var(--ink);
@@ -213,7 +204,6 @@ body {
     background-image: repeating-linear-gradient(90deg, currentColor 0 8px, transparent 8px 10px);
   }
 
-  /* Pantalla CRT de la terminal */
   .crt {
     position: relative;
     background: radial-gradient(ellipse at center, #0b1220 0%, var(--term) 75%);
@@ -232,7 +222,6 @@ body {
   shape-rendering: crispEdges;
 }
 
-/* ---------------- Animaciones ---------------- */
 .blink {
   animation: blink 1s steps(1) infinite;
 }

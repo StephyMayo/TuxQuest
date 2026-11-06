@@ -1,15 +1,10 @@
 import { choice, complete, fix, write } from "./builders.ts";
 import type { Question } from "./types.ts";
 
-// Comandos comunes a todas las familias. La terminal simulada empieza en /home/tux (~)
-// con: Documentos/{notas.txt, informe.txt, tareas.txt}, Descargas/{foto.jpg, musica.mp3, proyecto.tar.gz},
-// Imagenes/, Musica/, respaldo/, proyectos/{app.py, script.sh, web/{index.html, estilos.css}}, .bashrc
-
 const DOCS = "~/Documentos";
 const PROY = "~/proyectos";
 
 export const COMMON_EASY: Question[] = [
-  // Navegación
   choice("c-f-01", "navigation", "¿Qué comando muestra la carpeta en la que estás ahora?", ["pwd", "ls", "cd", "whoami"],
     "Sus letras vienen de «print working directory».", "pwd (print working directory) imprime la ruta completa de la carpeta actual."),
   choice("c-f-02", "navigation", "¿Qué comando lista los archivos de la carpeta actual?", ["ls", "dir /w", "list", "show"],
@@ -35,7 +30,6 @@ export const COMMON_EASY: Question[] = [
   complete("c-f-12", "navigation", "Vuelve a la carpeta en la que estabas justo antes.", "cd ___", ["-"],
     "Es un solo signo.", "«cd -» alterna entre la carpeta actual y la anterior."),
 
-  // Archivos
   choice("c-f-13", "files", "¿Qué comando crea una carpeta nueva?", ["mkdir", "touch", "newdir", "md"],
     "Viene de «make directory».", "mkdir crea carpetas. touch crea archivos vacíos."),
   complete("c-f-14", "files", "Crea la carpeta «fotos».", "___ fotos", ["mkdir"],
@@ -73,7 +67,6 @@ export const COMMON_EASY: Question[] = [
   choice("c-f-30", "files", "¿Qué comando muestra las últimas líneas de un archivo?", ["tail", "head", "end", "last"],
     "Significa «cola».", "tail muestra el final de un archivo; con -f sigue mostrando lo que se agrega."),
 
-  // Sistema y permisos
   choice("c-f-31", "system", "¿Qué comando muestra tu nombre de usuario?", ["whoami", "pwd", "user", "me"],
     "Pregunta «¿quién soy?» en inglés.", "whoami («who am I») muestra el usuario con el que trabajas."),
   choice("c-f-32", "system", "¿Qué comando muestra el manual de otro comando?", ["man", "help", "doc", "info-all"],
@@ -93,7 +86,6 @@ export const COMMON_EASY: Question[] = [
   complete("c-f-39", "permissions", "Da permiso de ejecución a script.sh.", "chmod ___ script.sh", ["+x", "u+x", "a+x"],
     "Se «suma» la x.", "chmod +x agrega el permiso de ejecución.", { cwd: PROY }),
 
-  // Búsqueda
   choice("c-f-40", "search", "¿Qué comando busca texto dentro de archivos?", ["grep", "find", "search", "look"],
     "Tiene cuatro letras y empieza con g.", "grep busca líneas que contengan un texto. find busca archivos por nombre."),
   complete("c-f-41", "search", "Busca la palabra «linux» en notas.txt.", "___ linux Documentos/notas.txt", ["grep"],
@@ -105,7 +97,6 @@ export const COMMON_EASY: Question[] = [
   complete("c-f-44", "search", "Muestra solo las líneas de ls que contienen «txt».", "ls Documentos | ___ txt", ["grep"],
     "El buscador de texto.", "La tubería pasa la lista a grep, que filtra las líneas."),
 
-  // Procesos, servicios y redes
   choice("c-f-45", "processes", "¿Qué combinación de teclas detiene el comando que se está ejecutando?", ["Ctrl + C", "Ctrl + V", "Ctrl + S", "Alt + F4"],
     "La misma que copiar en Windows… pero aquí no copia.", "Ctrl + C envía la señal de interrupción al programa en primer plano."),
   choice("c-f-46", "processes", "¿Qué comando muestra los procesos en tiempo real?", ["top", "ps", "proc", "tasks"],

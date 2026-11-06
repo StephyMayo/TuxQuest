@@ -2,16 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { correctCommand } from "@/lib/answer";
-import { shuffled } from "@/lib/story";
+import { shuffled } from "@/lib/shuffle";
 import { PixelTux } from "@/components/Pixel";
 import type { GameProps } from "./types";
 
-/**
- * Panel de parejas: cada comando se empareja con lo que hace.
- *
- * El texto de «lo que hace» sale de la explicación de la pregunta, recortada
- * a una frase para que quepa en la carta.
- */
 interface Card {
   id: number;
   pair: number;
@@ -19,7 +13,6 @@ interface Card {
   cmd: boolean;
 }
 
-/** Primera frase de la explicación, que es la que define el comando. */
 const resumen = (t: string) => {
   const frase = t.split(/(?<=\.)\s/)[0] ?? t;
   return frase.length > 92 ? frase.slice(0, 89).trimEnd() + "…" : frase;
@@ -61,7 +54,6 @@ export function Memoria({ chapter, family, questions, onFinish }: GameProps) {
   const tapaRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => void (tapaRef.current && clearTimeout(tapaRef.current)), []);
 
-  /** Destapa una carta y, si ya había otra, resuelve la pareja ahí mismo. */
   function destapar(c: Card) {
     if (abiertas.length >= 2 || abiertas.includes(c.id) || hechas.includes(c.pair)) return;
     if (abiertas.length === 0) return setAbiertas([c.id]);
@@ -72,7 +64,7 @@ export function Memoria({ chapter, family, questions, onFinish }: GameProps) {
       setAbiertas([]);
       return;
     }
-    // no encajan: se enseñan un momento y se vuelven a tapar
+
     setAbiertas([abiertas[0], c.id]);
     setFallos((f) => f + 1);
     tapaRef.current = setTimeout(() => setAbiertas([]), 900);
@@ -81,8 +73,7 @@ export function Memoria({ chapter, family, questions, onFinish }: GameProps) {
   useEffect(() => {
     if (hechas.length !== total || total === 0 || doneRef.current) return;
     doneRef.current = true;
-    // Cada fallo se come un acierto, con un suelo: encontrar todas las
-    // parejas a ciegas no puede salir peor que no encontrar ninguna.
+
     const t = setTimeout(() => onFinish(Math.max(0, total - Math.floor(fallos / 2)), total), 700);
     return () => clearTimeout(t);
   }, [hechas.length, total, fallos, onFinish]);
@@ -108,7 +99,6 @@ export function Memoria({ chapter, family, questions, onFinish }: GameProps) {
       >
         <span style={{ width: `${(hechas.length / total) * 100}%` }} />
       </div>
-
       <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cards.map((c) => {
           const resuelta = hechas.includes(c.pair);

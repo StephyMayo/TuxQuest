@@ -1,11 +1,5 @@
 import type { FamilyId } from "@/data/types";
 
-/**
- * Terminal simulada de TuxQuest.
- * Todo ocurre en memoria: un sistema de archivos virtual y un intérprete que imita bash.
- * Nunca se ejecuta nada en la computadora del jugador.
- */
-
 interface FileNode {
   kind: "file";
   content: string;
@@ -115,7 +109,6 @@ const PROCESSES = [
   { pid: 4321, user: "tux", cmd: "python3 app.py" },
 ];
 
-/** Comandos que solo existen en ciertas familias o distribuciones. */
 const FAMILY_COMMANDS: Record<string, FamilyId[]> = {
   apt: ["debian"], "apt-get": ["debian"], "apt-cache": ["debian"], dpkg: ["debian"],
   pacman: ["arch"], paccache: ["arch"],
@@ -175,17 +168,15 @@ export class Shell {
     this.prev = this.cwd;
   }
 
-  // ---------- Consultas para el modo historia ----------
-  /** Qué hay en esa ruta, o null si no existe. */
   peek(path: string): "dir" | "file" | null {
     const n = this.get(this.resolve(path));
     return n ? n.kind : null;
   }
-  /** Ruta absoluta actual, para comprobar objetivos de navegación. */
+
   get here() {
     return this.cwd;
   }
-  /** ¿Se ha ejecutado ya algún comando que empiece por esto? */
+
   hasRun(prefix: string) {
     const p = prefix.toLowerCase();
     return this.history.some((h) => h.trim().toLowerCase().startsWith(p));
@@ -196,7 +187,6 @@ export class Shell {
     return `${this.user}@${this.hostname}:${p}$`;
   }
 
-  // ---------- Sistema de archivos ----------
   private resolve(path: string): string {
     let p = path;
     if (p === "~" || p.startsWith("~/")) p = this.home + p.slice(1);
@@ -212,9 +202,6 @@ export class Shell {
   private get(abs: string): Node | null {
     let n: Node = this.root;
     for (const seg of abs.split("/").filter(Boolean)) {
-      // hasOwn y no "in": con `in` colarían las claves heredadas de
-      // Object.prototype, así que rutas como /constructor o /toString
-      // parecían existir y devolvían algo que no es un nodo.
       if (n.kind !== "dir" || !Object.hasOwn(n.children, seg)) return null;
       n = n.children[seg];
     }
@@ -235,7 +222,6 @@ export class Shell {
     return original.replace(/\/$/, "");
   }
 
-  /** Autocompletado con Tab: devuelve la palabra completada (o la misma si no hay una única opción). */
   complete(word: string): string {
     const slash = word.lastIndexOf("/");
     const dirPart = slash >= 0 ? word.slice(0, slash + 1) : "";
@@ -248,7 +234,6 @@ export class Shell {
     return dirPart + matches[0] + (node.kind === "dir" ? "/" : " ");
   }
 
-  // ---------- Intérprete ----------
   private scan(line: string): (Token | { op: string })[] {
     const out: (Token | { op: string })[] = [];
     let cur = "";
@@ -303,7 +288,7 @@ export class Shell {
     let clear = false;
     if (line.trim()) this.history.push(line);
     const items = this.scan(line);
-    // Separar en secuencias por ; && ||
+
     let seq: (Token | { op: string })[] = [];
     let lastCode = 0;
     let skip = false;
@@ -386,7 +371,6 @@ export class Shell {
     return d.owner === this.user || d.mode === "drwxrwxrwt";
   }
 
-  /** Expande ~ y comodines (*) no entrecomillados. */
   private expand(tokens: Token[]): string[] {
     const out: string[] = [];
     tokens.forEach((t, i) => {
@@ -450,7 +434,6 @@ export class Shell {
     return `${n.mode} ${links} ${n.owner.padEnd(4)} ${n.owner.padEnd(4)} ${String(fakeSize(n)).padStart(6)} oct 20 10:00 ${name}`;
   }
 
-  // ---------- Comandos ----------
   private commands = {
     pwd: () => ({ out: this.cwd + "\n" }),
     cd: (args: string[]): Res => {
@@ -851,7 +834,6 @@ export class Shell {
     yast: () => ({ out: "(simulado) Se abriría el centro de control YaST.\n" }),
     "do-release-upgrade": (_: string[], ctx: Ctx) => (ctx.sudo ? { out: "Buscando una nueva versión de Ubuntu\nNo se encontró ninguna versión nueva.\n" } : { err: "Necesita ser root para ejecutar este programa." }),
 
-    // Gestores de paquetes
     apt: (args: string[], ctx: Ctx) => this.pkg("apt", args, ctx),
     "apt-get": (args: string[], ctx: Ctx) => this.pkg("apt", args, ctx),
     "apt-cache": (args: string[], ctx: Ctx) => this.pkg("apt", args, ctx),

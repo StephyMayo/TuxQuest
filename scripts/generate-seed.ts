@@ -1,5 +1,3 @@
-// Genera supabase/seed.sql a partir del banco de preguntas local.
-// Uso: npm run seed
 import { writeFileSync } from "node:fs";
 import { DISTROS, FAMILIES } from "../src/data/catalog.ts";
 import { QUESTION_BANK } from "../src/data/questions.ts";

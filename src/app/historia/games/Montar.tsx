@@ -3,28 +3,20 @@
 import { useMemo, useRef, useState } from "react";
 import { tokenize } from "@/lib/answer";
 import { correctCommand } from "@/lib/answer";
-import { shuffled } from "@/lib/story";
+import { shuffled } from "@/lib/shuffle";
 import { PixelTux } from "@/components/Pixel";
 import type { Question } from "@/data/types";
 import type { GameProps } from "./types";
 
-/**
- * Monta el comando: se da el objetivo y las piezas desordenadas, y hay que
- * pulsarlas en el orden correcto.
- *
- * No se escribe nada: lo que se practica es el orden de las partes y cuál
- * sobra, que es donde se atasca quien aún no tiene el comando memorizado.
- */
 interface Ronda {
   prompt: string;
-  /** Piezas en su orden correcto. */
+
   parts: string[];
-  /** Piezas de más, para que no valga pulsarlas todas. */
+
   extra: string[];
   explanation: string;
 }
 
-/** Piezas señuelo según lo que haga el comando. */
 const SENUELOS = ["--force", "-rf", "sudo", "-y", "all", "--now", "-a", "local"];
 
 export function Montar({ chapter, family, questions, onFinish }: GameProps) {
@@ -41,7 +33,7 @@ export function Montar({ chapter, family, questions, onFinish }: GameProps) {
     for (const q of shuffled(aptas)) {
       const cmd = correctCommand(q as Question).trim();
       const parts = tokenize(cmd);
-      // Con menos de tres piezas no hay nada que ordenar.
+
       if (parts.length < 3 || parts.length > 6 || vistos.has(cmd)) continue;
       vistos.add(cmd);
       const extra = shuffled(SENUELOS.filter((s) => !parts.includes(s))).slice(0, 2);
@@ -82,7 +74,6 @@ export function Montar({ chapter, family, questions, onFinish }: GameProps) {
   if (!r)
     return <p className="card p-6 text-center font-game text-xl text-muted">No hay comandos de varias piezas para este tema.</p>;
 
-  // cada pieza se puede usar tantas veces como aparezca en el comando
   const disponibles = piezas.filter((p) => {
     const cabe = [...r.parts, ...r.extra].filter((x) => x === p).length;
     return puestas.filter((x) => x === p).length < cabe;
@@ -95,11 +86,8 @@ export function Montar({ chapter, family, questions, onFinish }: GameProps) {
           <div key={i} className={`h-3 flex-1 border-2 border-ink ${i < idx ? "bg-ok" : i === idx ? "bg-accent" : "bg-bg-2"}`} />
         ))}
       </div>
-
       <section className={`card mt-4 p-5 sm:p-6 ${checked && !bien ? "shake" : ""}`}>
         <h2 className="text-2xl font-semibold leading-snug">{r.prompt}</h2>
-
-        {/* lo montado hasta ahora */}
         <div className="crt mt-5 flex min-h-[64px] flex-wrap items-center gap-2 border-[3px] border-ink p-3">
           <span className="font-crt text-xl text-[var(--term-prompt)]">$</span>
           {puestas.length === 0 && <span className="font-crt text-xl text-muted">pulsa las piezas en orden…</span>}
@@ -114,7 +102,6 @@ export function Montar({ chapter, family, questions, onFinish }: GameProps) {
             </span>
           ))}
         </div>
-
         {!checked && (
           <>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -153,7 +140,6 @@ export function Montar({ chapter, family, questions, onFinish }: GameProps) {
           </div>
         )}
       </section>
-
       <p className="mt-3 flex items-center gap-2 text-sm text-muted">
         <PixelTux size={18} /> Comando {idx + 1} de {rondas.length} · {score} aciertos · dos de las piezas sobran
       </p>

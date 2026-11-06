@@ -64,7 +64,6 @@ export function AuthForm({ mode }: { mode: "login" | "registro" }) {
         <h1 className="pixel-title mt-5 text-lg sm:text-xl">{isRegister ? "NUEVO JUGADOR" : "CONTINUAR PARTIDA"}</h1>
         <p className="mt-2 text-muted">{isRegister ? "Crea tu cuenta y empieza tu primera misión." : "Inicia sesión para seguir con tus misiones."}</p>
       </div>
-
       <div className="card p-6 sm:p-7">
         <form onSubmit={submit} className="space-y-4" noValidate>
           {isRegister && (
@@ -87,17 +86,14 @@ export function AuthForm({ mode }: { mode: "login" | "registro" }) {
               required
             />
           </Field>
-
           <div aria-live="polite">
             {error && <p className="border-[3px] border-ink bg-bad/20 px-3 py-2 text-sm text-[#ffc2c8]">✖ {error}</p>}
             {info && <p className="border-[3px] border-ink bg-ok/15 px-3 py-2 text-sm text-ok">✔ {info}</p>}
           </div>
-
           <button type="submit" className="btn btn-primary w-full py-3 text-lg" disabled={busy}>
             {busy ? "Cargando…" : isRegister ? "▶ Crear cuenta" : "▶ Entrar"}
           </button>
         </form>
-
         {!isRegister && backend.mode === "demo" && (
           <div className="card-flat mt-6 p-4">
             <p className="font-game text-lg text-accent">★ Cuenta de prueba</p>
@@ -118,7 +114,6 @@ export function AuthForm({ mode }: { mode: "login" | "registro" }) {
             </button>
           </div>
         )}
-
         <p className="mt-6 text-center text-muted">
           {isRegister ? "¿Ya tienes cuenta? " : "¿Aún no tienes cuenta? "}
           <Link href={isRegister ? "/login" : "/registro"} className="font-game text-lg text-accent underline-offset-4 hover:underline">
