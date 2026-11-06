@@ -51,6 +51,21 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
   const doneRef = useRef(false);
   const killsRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  /**
+   * La lista de enemigos de verdad. El estado es solo para pintar.
+   *
+   * Antes el bucle calculaba el avance dentro del updater de setEnemies y
+   * ahí mismo quitaba vidas. Un updater tiene que ser una función pura:
+   * React lo llama dos veces en desarrollo (modo estricto), así que cada
+   * enemigo que se colaba restaba dos vidas en vez de una.
+   */
+  const enemiesRef = useRef<Live[]>([]);
+
+  /** Deja la lista en el ref y la manda a pintar. */
+  const publicar = useCallback((lista: Live[]) => {
+    enemiesRef.current = lista;
+    setEnemies(lista);
+  }, []);
 
   /** Comando para un enemigo nuevo: casi siempre del capítulo, a veces de repaso. */
   const nextCmd = useCallback(() => {
@@ -62,7 +77,11 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
   const acabar = useCallback(() => {
     if (doneRef.current) return;
     doneRef.current = true;
-    onFinish(killsRef.current, chapter.rounds);
+    // El capítulo se puntúa sobre el número de enemigos. Los trozos del
+    // paquete roto y el jefe son derribos de más, así que se recorta: el
+    // servidor rechaza cualquier resultado con más aciertos que total
+    // ("Resultado no valido") y el capítulo se quedaba sin guardar.
+    onFinish(Math.min(killsRef.current, chapter.rounds), chapter.rounds);
   }, [onFinish, chapter.rounds]);
 
   // --- bucle del juego ---
@@ -75,53 +94,55 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
+      let lista = enemiesRef.current;
+
       sinceSpawn += dt;
       if (sinceSpawn >= SPAWN[rules.id] && spawnedRef.current < chapter.rounds) {
         sinceSpawn = 0;
         spawnedRef.current++;
         const kind = chapter.enemies[Math.floor(Math.random() * chapter.enemies.length)];
-        setEnemies((es) => [...es, make(keyRef.current++, kind, nextCmd(), rules.id, es)]);
+        lista = [...lista, make(keyRef.current++, kind, nextCmd(), rules.id, lista)];
       }
 
-      setEnemies((es) => {
-        let perdidas = 0;
-        const vivos: Live[] = [];
-        for (const e of es) {
-          const age = e.age + dt;
-          // la fuga de memoria va cada vez más rápido
-          const acel = e.kind === "fuga" ? 1 + Math.min(1.4, age / 7) : 1;
-          const x = e.x - e.speed * acel * dt;
-          if (x <= 0) {
-            perdidas++;
-            continue;
-          }
-          vivos.push({ ...e, x, age });
+      let perdidas = 0;
+      const vivos: Live[] = [];
+      for (const e of lista) {
+        const age = e.age + dt;
+        // la fuga de memoria va cada vez más rápido
+        const acel = e.kind === "fuga" ? 1 + Math.min(1.4, age / 7) : 1;
+        const x = e.x - e.speed * acel * dt;
+        if (x <= 0) {
+          perdidas++;
+          continue;
         }
-        // los huérfanos protegen al que tengan más cerca
-        for (const v of vivos) v.shielded = false;
-        for (const g of vivos.filter((e) => e.kind === "huerfano")) {
-          let mejor: Live | null = null;
-          for (const v of vivos) {
-            if (v === g || v.kind === "huerfano") continue;
-            if (!mejor || Math.abs(v.x - g.x) < Math.abs(mejor.x - g.x)) mejor = v;
-          }
-          if (mejor) mejor.shielded = true;
+        vivos.push({ ...e, x, age });
+      }
+      // los huérfanos protegen al que tengan más cerca
+      for (const v of vivos) v.shielded = false;
+      for (const g of vivos.filter((e) => e.kind === "huerfano")) {
+        let mejor: Live | null = null;
+        for (const v of vivos) {
+          if (v === g || v.kind === "huerfano") continue;
+          if (!mejor || Math.abs(v.x - g.x) < Math.abs(mejor.x - g.x)) mejor = v;
         }
-        if (perdidas) {
-          livesRef.current = Math.max(0, livesRef.current - perdidas);
-          setLives(livesRef.current);
-          setCombo(0);
-          setFlash("¡Se te coló!");
-          if (livesRef.current === 0) acabar();
-        }
-        return vivos;
-      });
+        if (mejor) mejor.shielded = true;
+      }
+
+      publicar(vivos);
+
+      if (perdidas) {
+        livesRef.current = Math.max(0, livesRef.current - perdidas);
+        setLives(livesRef.current);
+        setCombo(0);
+        setFlash("¡Se te coló!");
+        if (livesRef.current === 0) acabar();
+      }
 
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [chapter, rules, nextCmd, acabar]);
+  }, [chapter, rules, nextCmd, acabar, publicar]);
 
   // --- jefe al final, y cierre del capítulo ---
   useEffect(() => {
@@ -132,7 +153,7 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
       bossOutRef.current = true;
       const b = BOSSES[chapter.boss];
       setFlash(b.taunt);
-      setEnemies([
+      publicar([
         {
           key: keyRef.current++,
           kind: null,
@@ -149,7 +170,7 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
       return;
     }
     if (!chapter.boss || bossOutRef.current) acabar();
-  }, [enemies.length, chapter, rules, nextCmd, acabar]);
+  }, [enemies.length, chapter, rules, nextCmd, acabar, publicar]);
 
   useEffect(() => {
     if (!flash) return;
@@ -172,7 +193,7 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
     e.preventDefault();
     const t = typed.trim();
     if (!t) return;
-    const golpeado = [...enemies].filter((x) => x.cmd.toLowerCase() === t.toLowerCase()).sort((a, b) => a.x - b.x)[0];
+    const golpeado = [...enemiesRef.current].filter((x) => x.cmd.toLowerCase() === t.toLowerCase()).sort((a, b) => a.x - b.x)[0];
     setTyped("");
     if (!golpeado) {
       setCombo(0);
@@ -183,37 +204,46 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
       setFlash("Protegido: quita antes al demonio huérfano");
       return;
     }
-    setEnemies((es) => {
-      const out: Live[] = [];
-      for (const e of es) {
-        if (e.key !== golpeado.key) {
-          out.push(e);
-          continue;
-        }
-        if (e.hitsLeft > 1) {
-          out.push({ ...e, hitsLeft: e.hitsLeft - 1, cmd: nextCmd() });
-          continue;
-        }
-        // el paquete roto se parte en dos trozos
-        if (e.kind === "roto" && !e.shard) {
-          for (const d of [-1, 1]) {
-            out.push({
-              ...e,
-              key: keyRef.current++,
-              cmd: nextCmd(),
-              x: Math.min(100, e.x + 4),
-              lane: (e.lane + (d < 0 ? 1 : LANES - 1)) % LANES,
-              speed: e.speed * 1.15,
-              hitsLeft: 1,
-              shard: true,
-            });
-          }
+
+    // Al zombi y al jefe hay que darles varias veces: este golpe solo los
+    // remata si ya les quedaba un toque.
+    const muere = golpeado.hitsLeft <= 1;
+    const out: Live[] = [];
+    for (const e of enemiesRef.current) {
+      if (e.key !== golpeado.key) {
+        out.push(e);
+        continue;
+      }
+      if (!muere) {
+        out.push({ ...e, hitsLeft: e.hitsLeft - 1, cmd: nextCmd() });
+        continue;
+      }
+      // el paquete roto se parte en dos trozos
+      if (e.kind === "roto" && !e.shard) {
+        for (const d of [-1, 1]) {
+          out.push({
+            ...e,
+            key: keyRef.current++,
+            cmd: nextCmd(),
+            x: Math.min(100, e.x + 4),
+            lane: (e.lane + (d < 0 ? 1 : LANES - 1)) % LANES,
+            speed: e.speed * 1.15,
+            hitsLeft: 1,
+            shard: true,
+          });
         }
       }
-      return out;
-    });
-    killsRef.current += 1;
-    setKills(killsRef.current);
+    }
+    publicar(out);
+
+    // Solo cuenta como derribo el golpe que lo remata. Antes sumaba uno por
+    // cada comando acertado, así que un zombi valía dos y el jefe seis: el
+    // capítulo acababa con más derribos que enemigos y al guardarlo el
+    // servidor lo rechazaba, de modo que no se marcaba como superado.
+    if (muere) {
+      killsRef.current += 1;
+      setKills(killsRef.current);
+    }
     setCombo((c) => c + 1);
   }
 

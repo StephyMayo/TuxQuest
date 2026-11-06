@@ -56,6 +56,7 @@ export function Chapter() {
   const [loadError, setLoadError] = useState(false);
   const [result, setResult] = useState<{ score: number; total: number } | null>(null);
   const [saved, setSaved] = useState<{ coins: number } | null>(null);
+  const [saveError, setSaveError] = useState(false);
   const savingRef = useRef(false);
 
   useEffect(() => {
@@ -89,13 +90,16 @@ export function Chapter() {
         setCoins(coins);
         setSaved({ coins });
       })
-      .catch(() => setSaved(null));
+      // Sin esto el fallo era invisible: el capítulo se veía superado pero
+      // no se guardaba, así que no daba monedas ni abría el siguiente.
+      .catch(() => setSaveError(true));
   }, [phase, result, chapter, backend, setCoins, family, difficulty]);
 
   function reiniciar() {
     savingRef.current = false;
     setResult(null);
     setSaved(null);
+    setSaveError(false);
     setPhase("reglas");
   }
 
@@ -300,6 +304,8 @@ export function Chapter() {
             {saved && <span className="font-game text-lg text-muted">· total {saved.coins}</span>}
           </div>
         )}
+
+        {saveError && <p className="mt-3 text-sm text-bad">No se pudo guardar el capítulo. Revisa tu conexión e inténtalo otra vez.</p>}
 
         {esFinal && <Narracion title={EPILOGUE.title} text={EPILOGUE.text} tone="epilogo" />}
 
