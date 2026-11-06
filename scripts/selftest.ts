@@ -1,6 +1,3 @@
-// Verifica el banco de preguntas: cada respuesta correcta debe ser aceptada por el corrector
-// y ejecutarse sin errores en la terminal simulada de cada distribución donde aparece.
-// Uso: npm run check:preguntas
 import { QUESTION_BANK } from "../src/data/questions.ts";
 import { DISTROS } from "../src/data/catalog.ts";
 import { Shell } from "../src/lib/shell.ts";

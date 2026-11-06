@@ -1,4 +1,3 @@
-/** Enemigos del modo historia, dibujados con el mismo sistema que el resto de sprites. */
 import type { BossId, EnemyId } from "@/data/story";
 import { Sprite, type Palette } from "@/components/Pixel";
 
@@ -7,9 +6,6 @@ interface Art {
   palette: Palette;
 }
 
-// --- Enemigos corrientes (16x16) ---------------------------------------
-
-/** Bicho: el fallo de toda la vida. */
 const BICHO: Art = {
   map: [
     "................",
@@ -32,7 +28,6 @@ const BICHO: Art = {
   palette: { K: "#06030f", G: "#6ee06e", W: "#ffffff" },
 };
 
-/** Proceso zombi: terminó hace meses y sigue ahí. */
 const ZOMBI: Art = {
   map: [
     "................",
@@ -55,7 +50,6 @@ const ZOMBI: Art = {
   palette: { K: "#06030f", P: "#9ad6a0", R: "#c4576b" },
 };
 
-/** Fuga de memoria: gotea y cada vez va más rápido. */
 const FUGA: Art = {
   map: [
     ".......KK.......",
@@ -78,7 +72,6 @@ const FUGA: Art = {
   palette: { K: "#06030f", C: "#4fc3f7", W: "#dff6ff" },
 };
 
-/** Paquete roto: al destruirlo se parte en dos. */
 const ROTO: Art = {
   map: [
     "................",
@@ -101,7 +94,6 @@ const ROTO: Art = {
   palette: { K: "#06030f", B: "#d08b3c", W: "#ffe0a8" },
 };
 
-/** Demonio huérfano: escuda al que tenga al lado. */
 const HUERFANO: Art = {
   map: [
     "....K......K....",
@@ -132,9 +124,6 @@ const ENEMY_ART: Record<EnemyId, Art> = {
   huerfano: HUERFANO,
 };
 
-// --- Jefes (20x20) -----------------------------------------------------
-
-/** Kernel Panic: la pantalla que no vuelve. */
 const PANICO: Art = {
   map: [
     "....KKKKKKKKKKKK....",
@@ -161,7 +150,6 @@ const PANICO: Art = {
   palette: { K: "#06030f", R: "#ff5c6c", W: "#ffffff" },
 };
 
-/** Bucle Infinito: otra vez, otra vez, otra vez. */
 const BUCLE: Art = {
   map: [
     "......KKKKKKKK......",
@@ -188,7 +176,6 @@ const BUCLE: Art = {
   palette: { K: "#06030f", Y: "#ffd23f", W: "#2a1a00" },
 };
 
-/** Disco Lleno: ya no cabe nada más. */
 const DISCO: Art = {
   map: [
     "..KKKKKKKKKKKKKKKK..",
@@ -215,7 +202,6 @@ const DISCO: Art = {
   palette: { K: "#06030f", G: "#8f86d0", W: "#3be8ff" },
 };
 
-/** El Root Perdido: llegó hasta aquí antes que tú. */
 const ROOT: Art = {
   map: [
     ".......KKKKKK.......",

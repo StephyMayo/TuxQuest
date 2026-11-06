@@ -12,24 +12,24 @@ export interface Player {
   username: string;
   email: string;
   coins: number;
-  /** Familia elegida a mano. null = se deduce de las misiones superadas. */
+
   family: string | null;
-  /** Lo que lleva puesto: avatar, título y marco. */
+
   loadout: Loadout;
 }
 
 export interface Backend {
   mode: "supabase" | "demo";
   getPlayer(): Promise<Player | null>;
-  /** Devuelve null si hay que confirmar el correo antes de entrar. */
+
   signUp(username: string, email: string, password: string): Promise<Player | null>;
   signIn(email: string, password: string): Promise<Player>;
   signOut(): Promise<void>;
   getQuestions(): Promise<Question[]>;
-  /** Todo el progreso del jugador, una fila por familia, dificultad y tema. */
+
   getProgress(): Promise<ProgressRow[]>;
   spendCoins(amount: number): Promise<number>;
-  /** Guarda una partida terminada, sea una misión o un capítulo de historia. */
+
   finishRun(
     family: string,
     difficulty: string,
@@ -39,33 +39,25 @@ export interface Backend {
     total: number,
     boost?: ActiveBoost | null,
   ): Promise<number>;
-  // --- Tienda y perfil ---
+
   getInventory(): Promise<Inventory>;
   buyItem(itemId: string): Promise<{ coins: number; inventory: Inventory }>;
   equip(slot: Slot, itemId: string): Promise<Loadout>;
-  /** Gasta una unidad de un boost durante la partida. Devuelve el inventario actualizado. */
+
   consumeBoost(itemId: ActiveBoost): Promise<Inventory>;
-  /** Cambia el nombre de usuario. Devuelve el nombre ya guardado. */
+
   setUsername(username: string): Promise<string>;
-  /** Fija la familia del perfil. null deja que se deduzca de lo jugado. */
+
   setFamily(family: string | null): Promise<string | null>;
-  /**
-   * Pide el cambio de correo. Devuelve true si el cambio quedó hecho y false
-   * si hace falta confirmarlo desde el correo nuevo, que es lo normal.
-   */
+
   setEmail(email: string): Promise<boolean>;
 }
 
-/** Reglas del nombre de usuario, las mismas que valida la base de datos. */
 export const USERNAME_RE = /^[A-Za-z0-9_]{3,20}$/;
 export const USERNAME_HELP = "De 3 a 20 caracteres: letras, números o guion bajo.";
 
 export class AuthError extends Error {}
 export class ShopError extends Error {}
-
-// ---------------------------------------------------------------------------
-// Supabase
-// ---------------------------------------------------------------------------
 
 interface QuestionRow {
   id: string;
@@ -109,7 +101,6 @@ const AUTH_MESSAGES: Record<string, string> = {
   "Email not confirmed": "Primero confirma tu correo con el enlace que te enviamos.",
 };
 
-/** Mensajes que Supabase devuelve con texto variable: se buscan por fragmento. */
 const AUTH_PATTERNS: [RegExp, string][] = [
   [
     /email rate limit|over_email_send_rate_limit|rate limit exceeded/i,
@@ -127,7 +118,6 @@ const AUTH_PATTERNS: [RegExp, string][] = [
 
 const authMessage = (m: string) => AUTH_MESSAGES[m] ?? AUTH_PATTERNS.find(([re]) => re.test(m))?.[1] ?? m;
 
-/** Traduce los errores que lanzan las funciones de la tienda. */
 function shopMessage(m: string) {
   if (/nombre no valido/i.test(m)) return USERNAME_HELP;
   if (/nombre en uso/i.test(m)) return "Ese nombre de usuario ya está en uso.";
@@ -160,7 +150,6 @@ const loadoutOf = (r: ProfileRow): Loadout => ({
   frame: r.frame ?? DEFAULT_LOADOUT.frame,
 });
 
-/** Fila de profiles -> jugador. El correo lo pone Auth, no esta tabla. */
 const toPlayer = (r: ProfileRow, email: string): Player => ({
   id: r.id,
   username: r.username,
@@ -307,22 +296,16 @@ class SupabaseBackend implements Backend {
   async setEmail(email: string) {
     const { data, error } = await this.db.auth.updateUser({ email });
     if (error) throw new ShopError(shopMessage(error.message));
-    // Supabase manda un correo de confirmación a la dirección nueva; hasta
-    // que no se pulse el enlace, la cuenta sigue con la anterior.
+
     return data.user?.email?.toLowerCase() === email.trim().toLowerCase();
   }
 }
-
-// ---------------------------------------------------------------------------
-// Modo demo: todo se guarda en el navegador (localStorage). Solo para probar sin Supabase.
-// ---------------------------------------------------------------------------
 
 interface DemoUser extends Player {
   passwordHash: string;
   inventory: Inventory;
 }
 
-/** Valores que usaba la versión en castellano, para traducir lo guardado. */
 const OLD_DIFFICULTY: Record<string, string> = { facil: "easy", medio: "medium", dificil: "hard" };
 const OLD_TOPIC: Record<string, string> = {
   navegacion: "navigation",
@@ -352,12 +335,10 @@ function save(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* almacenamiento no disponible */
   }
 }
 
 async function sha256(text: string) {
-  // crypto.subtle solo existe en contextos seguros (https o localhost)
   if (!globalThis.crypto?.subtle) return sha256Hex(text);
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -365,7 +346,6 @@ async function sha256(text: string) {
 
 const newId = () => (typeof globalThis.crypto?.randomUUID === "function" && globalThis.isSecureContext ? crypto.randomUUID() : `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
 
-/** Cuenta de prueba disponible en modo demo. */
 export const DEMO_ACCOUNT = { email: "demo@tuxquest.pe", password: "tux12345", username: "tux_demo" };
 const DEMO_USER: DemoUser = {
   id: "demo-tux",
@@ -375,7 +355,7 @@ const DEMO_USER: DemoUser = {
   family: null,
   loadout: { ...DEFAULT_LOADOUT },
   inventory: {},
-  passwordHash: "77f452e816a4198332b907a57e18b6c303d47d35d4b12a43ad4f4ea74311f2b4", // sha256("tux12345")
+  passwordHash: "77f452e816a4198332b907a57e18b6c303d47d35d4b12a43ad4f4ea74311f2b4",
 };
 
 class DemoBackend implements Backend {
@@ -384,7 +364,7 @@ class DemoBackend implements Backend {
   private users() {
     const users = load<Record<string, DemoUser>>(USERS, {});
     const all = users[DEMO_USER.email] ? users : { ...users, [DEMO_USER.email]: DEMO_USER };
-    // Las cuentas creadas antes de la tienda no traen estos campos
+
     for (const u of Object.values(all)) {
       u.loadout ??= { ...DEFAULT_LOADOUT };
       u.inventory ??= {};
@@ -445,7 +425,6 @@ class DemoBackend implements Backend {
     try {
       localStorage.removeItem(SESSION);
     } catch {
-      /* nada */
     }
   }
 
@@ -458,13 +437,7 @@ class DemoBackend implements Backend {
     if (!u) return [];
     const guardado = load<ProgressRow[] | Record<string, MissionProgress>>(progressKey(u.id), []);
     if (Array.isArray(guardado)) return guardado;
-    // Partidas guardadas con el formato viejo, "familia:dificultad:tema".
-    // Las del modo historia iban como "historia:<tema>", sin familia, así
-    // que no hay de dónde sacarla y se descartan.
-    //
-    // La dificultad y el tema venían en castellano, así que además de
-    // repartir la clave hay que traducirlos: si no, esas filas no
-    // encajarían nunca con lo que pide el juego.
+
     const migrado: ProgressRow[] = [];
     for (const [clave, v] of Object.entries(guardado)) {
       const [family, dif, tema] = clave.split(":");
@@ -592,7 +565,7 @@ class DemoBackend implements Backend {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) throw new ShopError("Ese correo no es válido.");
     if (Object.values(this.users()).some((o) => o.id !== u.id && o.email === mail))
       throw new ShopError("Ya hay una cuenta con ese correo.");
-    // En demo las cuentas van por correo, así que hay que mover la entrada.
+
     const users = this.users();
     delete users[u.email];
     u.email = mail;
@@ -601,14 +574,12 @@ class DemoBackend implements Backend {
   }
 }
 
-// ---------------------------------------------------------------------------
-
 let instance: Backend | null = null;
 
 export function getBackend(): Backend {
   if (instance) return instance;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  // Supabase llama a la clave pública "publishable key" (antes "anon key"); aceptamos ambos nombres.
+
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   instance = url && key ? new SupabaseBackend(createClient(url, key)) : new DemoBackend();
   return instance;

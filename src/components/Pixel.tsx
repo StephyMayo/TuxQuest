@@ -1,5 +1,3 @@
-/** Sprites pixel art dibujados en SVG a partir de mapas de caracteres. */
-
 export type Palette = Record<string, string>;
 
 export function Sprite({ map, palette, size, className = "", title }: { map: string[]; palette: Palette; size: number; className?: string; title?: string }) {
@@ -77,7 +75,6 @@ export function Stars({ count, size = 22 }: { count: number; size?: number }) {
   );
 }
 
-/** 0-3 estrellas según el porcentaje de aciertos. */
 export const starsFor = (ratio: number) => (ratio >= 1 ? 3 : ratio >= 0.85 ? 2 : ratio >= 0.7 ? 1 : 0);
 
 const HEART_MAP = [".KK.KK.", "KRRKRRK", "KRWRRRK", "KRRRRRK", ".KRRRK.", "..KRK..", "...K..."];
@@ -106,7 +103,6 @@ export function PixelLock({ size = 16 }: { size?: number }) {
   return <Sprite map={LOCK_MAP} palette={{ K: "#06030f", G: "#9a92b8" }} size={size} />;
 }
 
-/** Paisaje pixel: montañas nevadas e icebergs (decorativo). */
 export function PixelLandscape({ className = "" }: { className?: string }) {
   const W = 160;
   const cols = Array.from({ length: W }, (_, x) => {
@@ -132,17 +128,11 @@ export function PixelLandscape({ className = "" }: { className?: string }) {
   );
 }
 
-
-// ---------------------------------------------------------------------------
-// Avatares de la tienda: variantes del sprite de Tux (paleta + accesorios)
-// ---------------------------------------------------------------------------
-
 const GOLD_PAL: Palette = { K: "#3a2a00", W: "#ffd23f", Y: "#fff6c9", O: "#e0a100", C: "#06030f", R: "#ff5d8f" };
 const GHOST_PAL: Palette = { K: "#2b2450", W: "#b9c7ff", Y: "#8f86d0", O: "#6a5fb0", C: "#06030f", R: "#ff5d8f" };
 const NINJA_PAL: Palette = { K: "#06030f", W: "#4a4268", Y: "#ffb627", O: "#e07b00", C: "#3be8ff", R: "#ff5c6c" };
 const BASE_PAL: Palette = { ...TUX_PAL, C: "#3be8ff", R: "#ff5c6c" };
 
-/** Devuelve el mapa con algunas filas sustituidas. */
 const withRows = (map: string[], rows: Record<number, string>) => map.map((r, i) => rows[i] ?? r);
 
 const CROWN = [".....C..C..C......", "....CCCCCCCCC....."];
@@ -163,22 +153,19 @@ const AVATAR_SKINS: Record<string, AvatarSkin> = {
   tux_ghost: { map: TUX_MAP, palette: GHOST_PAL },
 };
 
-export const avatarIds = () => Object.keys(AVATAR_SKINS);
-
-/** Avatar del jugador. Si el id no existe, cae en el Tux clásico. */
 export function PixelAvatar({ id, size = 48, className = "", bob = false, title }: { id: string; size?: number; className?: string; bob?: boolean; title?: string }) {
   const skin = AVATAR_SKINS[id] ?? AVATAR_SKINS.tux;
   return <Sprite map={skin.map} palette={skin.palette} size={size} className={`${bob ? "bob" : ""} ${className}`} title={title} />;
 }
 
 const BAG_MAP = ["..KK..KK..", ".K..KK..K.", "KKKKKKKKKK", "KYYYYYYYYK", "KYYKYYKYYK", "KYYYYYYYYK", "KYYKKKKYYK", "KYYYYYYYYK", "KKKKKKKKKK"];
-/** Icono de la tienda. */
+
 export function PixelBag({ size = 18, className = "" }: { size?: number; className?: string }) {
   return <Sprite map={BAG_MAP} palette={{ K: "#2a1a00", Y: "#ffd23f" }} size={size} className={className} />;
 }
 
 const SHIELD_MAP = ["KKKKKKKK", "KCCCCCCK", "KCCWWCCK", "KCCWWCCK", "KCCCCCCK", ".KCCCCK.", "..KCCK..", "...KK..."];
-/** Icono del boost escudo. */
+
 export function PixelShield({ size = 16, className = "" }: { size?: number; className?: string }) {
   return <Sprite map={SHIELD_MAP} palette={{ K: "#06222a", C: "#3be8ff", W: "#eafdff" }} size={size} className={className} />;
 }

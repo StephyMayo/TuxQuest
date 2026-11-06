@@ -16,7 +16,6 @@ const TICKER = ["ls -la", "cd ~/proyectos", "sudo apt install vlc", "sudo pacman
 export default function Home() {
   return (
     <div>
-      {/* Portada */}
       <section className="relative overflow-hidden border-b-[3px] border-ink">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-6 pt-12 md:grid-cols-[1.15fr_1fr] md:pt-16">
           <div>
@@ -40,7 +39,6 @@ export default function Home() {
               </Link>
             </div>
           </div>
-
           <div className="relative">
             <div className="card overflow-hidden" aria-label="Ejemplo de la terminal simulada">
               <div className="flex items-center gap-2 border-b-[3px] border-ink bg-panel-2 px-3 py-2">
@@ -67,8 +65,6 @@ export default function Home() {
         </div>
         <PixelLandscape className="mt-6 h-24 sm:h-32" />
       </section>
-
-      {/* Cinta de comandos */}
       <div className="overflow-hidden border-b-[3px] border-ink bg-accent py-2.5 text-accent-ink" aria-hidden="true">
         <div className="marquee flex w-max gap-10 font-crt text-2xl">
           {[...TICKER, ...TICKER].map((c, i) => (
@@ -78,9 +74,7 @@ export default function Home() {
           ))}
         </div>
       </div>
-
       <div className="mx-auto max-w-6xl px-4">
-        {/* Cómo funciona */}
         <section className="py-16" aria-labelledby="como">
           <h2 id="como" className="pixel-title text-center text-lg sm:text-2xl">
             ¿CÓMO SE JUEGA?
@@ -97,8 +91,6 @@ export default function Home() {
             ))}
           </ol>
         </section>
-
-        {/* Mundos */}
         <section className="py-10" aria-labelledby="familias">
           <h2 id="familias" className="pixel-title text-center text-lg sm:text-2xl">
             ELIGE TU MUNDO
@@ -122,8 +114,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-
-        {/* Dificultades */}
         <section className="py-16" aria-labelledby="niveles">
           <h2 id="niveles" className="pixel-title text-center text-lg sm:text-2xl">
             SELECCIONA DIFICULTAD
@@ -155,8 +145,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-
-        {/* Llamado final */}
         <section className="card mb-6 flex flex-col items-center gap-5 px-6 py-12 text-center">
           <PixelTux size={88} bob />
           <h2 className="pixel-title text-base sm:text-xl">¿LISTO PARA TU PRIMERA MISIÓN?</h2>

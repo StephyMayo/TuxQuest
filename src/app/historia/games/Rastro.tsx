@@ -2,15 +2,9 @@
 
 import { useMemo, useRef, useState } from "react";
 import { RASTRO } from "@/data/minijuegos";
-import { shuffled } from "@/lib/story";
+import { shuffled } from "@/lib/shuffle";
 import type { GameProps } from "./types";
 
-/**
- * Sigue el rastro: dado un patrón, marcar las líneas que encajan.
- *
- * Es lo que hacen por dentro `find -name` y `grep`: comparar cada nombre o
- * cada línea contra un patrón. Aquí se practica el patrón, sin teclear.
- */
 export function Rastro({ chapter, onFinish }: GameProps) {
   const rondas = useMemo(() => shuffled(RASTRO).slice(0, Math.min(chapter.rounds, RASTRO.length)), [chapter.rounds]);
   const [idx, setIdx] = useState(0);
@@ -20,7 +14,7 @@ export function Rastro({ chapter, onFinish }: GameProps) {
   const doneRef = useRef(false);
 
   const r = rondas[idx];
-  // Acierta si marcó exactamente las que encajan: ni una de menos ni una de más.
+
   const bien = r.lines.every((l, i) => l.match === picked.has(i));
 
   function comprobar() {
@@ -48,12 +42,10 @@ export function Rastro({ chapter, onFinish }: GameProps) {
           <div key={i} className={`h-3 flex-1 border-2 border-ink ${i < idx ? "bg-ok" : i === idx ? "bg-accent" : "bg-bg-2"}`} />
         ))}
       </div>
-
       <section className={`card mt-4 p-5 sm:p-6 ${checked && !bien ? "shake" : ""}`}>
         <p className="font-game text-xl text-muted">Marca todas las líneas que encajan con este patrón:</p>
         <code className="crt mt-2 inline-block border-[3px] border-ink px-3 py-2 font-crt text-2xl text-accent">{r.pattern}</code>
         <p className="mt-2 font-crt text-lg text-muted">Como si escribieras: {r.tool}</p>
-
         <ul className="mt-5 grid gap-2 sm:grid-cols-2">
           {r.lines.map((l, i) => {
             const marcada = picked.has(i);
@@ -90,7 +82,6 @@ export function Rastro({ chapter, onFinish }: GameProps) {
             );
           })}
         </ul>
-
         {!checked ? (
           <button className="btn btn-primary mt-5 w-full py-3" onClick={comprobar}>
             Comprobar
@@ -105,7 +96,6 @@ export function Rastro({ chapter, onFinish }: GameProps) {
           </div>
         )}
       </section>
-
       <p className="mt-3 text-sm text-muted">
         Ronda {idx + 1} de {rondas.length} · {score} aciertos
       </p>

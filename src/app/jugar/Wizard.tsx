@@ -43,8 +43,6 @@ export function Wizard() {
           </Link>
         </div>
       )}
-
-      {/* Indicador de pasos */}
       <ol className="grid grid-cols-3 gap-2 sm:gap-3" aria-label="Pasos">
         {STEP_NAMES.map((name, i) => (
           <li key={name}>
@@ -62,12 +60,10 @@ export function Wizard() {
           </li>
         ))}
       </ol>
-
       <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
         <h1 className="pixel-title text-base sm:text-xl">{STEP_TITLES[step]}</h1>
         {summary.length > 0 && <p className="font-game text-lg text-muted">{summary.join(" › ")}</p>}
       </div>
-
       <section className="mt-6" aria-live="polite" key={step}>
         {step === 0 && (
           <div className="grid gap-5 sm:grid-cols-2">
@@ -175,7 +171,6 @@ export function Wizard() {
           </div>
         )}
       </section>
-
       {step > 0 && (
         <button className="btn btn-ghost btn-sm mt-8" onClick={() => setStep(step - 1)}>
           ◀ Atrás

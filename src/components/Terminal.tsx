@@ -13,9 +13,9 @@ export interface TerminalHandle {
 interface Props {
   shell: Shell;
   disabled?: boolean;
-  /** Reto «completar»: la línea se muestra con un hueco editable en lugar de ___ */
+
   template?: string;
-  /** Recibe el comando escrito. Devuelve true si debe ejecutarse en la terminal simulada. */
+
   onSubmit: (command: string, typed: string) => boolean;
   intro?: string;
 }

@@ -4,7 +4,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "./AuthProvider";
 
-/** Redirige al login si no hay sesión iniciada. */
 export function useRequirePlayer() {
   const auth = useAuth();
   const router = useRouter();

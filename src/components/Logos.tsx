@@ -1,9 +1,3 @@
-/**
- * Logos de las familias y distribuciones dibujados en pixel art (16x16),
- * para no depender de imágenes externas y mantener el estilo del juego.
- * Son versiones simplificadas de cada marca, hechas con el mismo sistema
- * de mapas de caracteres que el resto de sprites.
- */
 import { Sprite, type Palette } from "./Pixel";
 
 interface Logo {
@@ -11,9 +5,6 @@ interface Logo {
   palette: Palette;
 }
 
-// --- Familias -------------------------------------------------------------
-
-/** Debian: la espiral. */
 const DEBIAN: Logo = {
   map: [
     "................",
@@ -36,7 +27,6 @@ const DEBIAN: Logo = {
   palette: { R: "#d70751" },
 };
 
-/** Arch: la montaña con el hueco inferior. */
 const ARCH: Logo = {
   map: [
     ".......BB.......",
@@ -59,7 +49,6 @@ const ARCH: Logo = {
   palette: { B: "#1793d1" },
 };
 
-/** Red Hat: el sombrero. */
 const REDHAT: Logo = {
   map: [
     "................",
@@ -82,7 +71,6 @@ const REDHAT: Logo = {
   palette: { R: "#ee0000", K: "#8b0000" },
 };
 
-/** SUSE: el camaleón. */
 const SUSE: Logo = {
   map: [
     "................",
@@ -105,9 +93,6 @@ const SUSE: Logo = {
   palette: { G: "#30ba78", W: "#ffffff", K: "#06030f" },
 };
 
-// --- Distribuciones -------------------------------------------------------
-
-/** Ubuntu: el círculo de amigos. */
 const UBUNTU: Logo = {
   map: [
     "................",
@@ -130,7 +115,6 @@ const UBUNTU: Logo = {
   palette: { O: "#e95420", W: "#ffffff" },
 };
 
-/** Linux Mint: la hoja. */
 const MINT: Logo = {
   map: [
     "................",
@@ -153,7 +137,6 @@ const MINT: Logo = {
   palette: { G: "#86be43" },
 };
 
-/** Fedora: el disco con la f. */
 const FEDORA: Logo = {
   map: [
     "................",
@@ -176,7 +159,6 @@ const FEDORA: Logo = {
   palette: { B: "#51a2da", W: "#ffffff" },
 };
 
-/** Rocky Linux: la montaña. */
 const ROCKY: Logo = {
   map: [
     "................",
@@ -199,7 +181,6 @@ const ROCKY: Logo = {
   palette: { G: "#10b981", W: "#d1fae5" },
 };
 
-/** AlmaLinux: la A. */
 const ALMA: Logo = {
   map: [
     "................",
@@ -222,7 +203,6 @@ const ALMA: Logo = {
   palette: { B: "#4a9fd8" },
 };
 
-/** Manjaro: las tres barras. */
 const MANJARO: Logo = {
   map: [
     "................",
@@ -245,7 +225,6 @@ const MANJARO: Logo = {
   palette: { G: "#35bf5c" },
 };
 
-/** EndeavourOS: el cometa. */
 const ENDEAVOUR: Logo = {
   map: [
     "................",
@@ -268,7 +247,6 @@ const ENDEAVOUR: Logo = {
   palette: { M: "#7b3fb5" },
 };
 
-/** CachyOS: la C. */
 const CACHY: Logo = {
   map: [
     "................",
@@ -291,7 +269,6 @@ const CACHY: Logo = {
   palette: { C: "#00bcd4" },
 };
 
-/** openSUSE Leap: los escalones (leap = salto). */
 const LEAP: Logo = {
   map: [
     "................",
@@ -331,13 +308,11 @@ const DISTRO_LOGOS: Record<string, Logo> = {
   leap: LEAP,
 };
 
-/** Logo de una familia (Debian, Arch, Red Hat, SUSE). */
 export function FamilyLogo({ id, size = 32, className = "", title }: { id: string; size?: number; className?: string; title?: string }) {
   const logo = FAMILY_LOGOS[id] ?? DEBIAN;
   return <Sprite map={logo.map} palette={logo.palette} size={size} className={className} title={title} />;
 }
 
-/** Logo de una distribución. Si no tiene propio, usa el de su familia. */
 export function DistroLogo({
   id,
   familyId,
@@ -355,7 +330,6 @@ export function DistroLogo({
   return <Sprite map={logo.map} palette={logo.palette} size={size} className={className} title={title} />;
 }
 
-/** Insignia de familia: recuadro con el color de la marca y su logo dentro. */
 export function FamilyBadge({ id, name, color, size = 44 }: { id: string; name: string; color: string; size?: number }) {
   return (
     <span
@@ -365,32 +339,6 @@ export function FamilyBadge({ id, name, color, size = 44 }: { id: string; name: 
       aria-label={`Logo de ${name}`}
     >
       <FamilyLogo id={id} size={Math.round(size * 0.74)} />
-    </span>
-  );
-}
-
-/** Insignia de distribución, con el mismo recuadro que la de familia. */
-export function DistroBadge({
-  id,
-  familyId,
-  name,
-  color,
-  size = 44,
-}: {
-  id: string;
-  familyId?: string;
-  name: string;
-  color: string;
-  size?: number;
-}) {
-  return (
-    <span
-      className="grid shrink-0 place-items-center border-[3px] border-ink bg-bg-2"
-      style={{ width: size, height: size, boxShadow: `inset -3px -3px 0 #00000055, inset 3px 3px 0 ${color}33, 3px 3px 0 #06030f` }}
-      role="img"
-      aria-label={`Logo de ${name}`}
-    >
-      <DistroLogo id={id} familyId={familyId} size={Math.round(size * 0.74)} />
     </span>
   );
 }

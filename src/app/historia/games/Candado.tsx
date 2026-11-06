@@ -3,18 +3,10 @@
 import { useMemo, useRef, useState } from "react";
 import type { GameProps } from "./types";
 
-/**
- * Candado de permisos: marcar en la rejilla los nueve interruptores que
- * corresponden al permiso que se pide con palabras.
- *
- * Mientras se marca se ve a la vez la forma en letras (rwxr-xr--) y en
- * números (754), que es justo la traducción que cuesta interiorizar.
- */
 const QUIEN = ["dueño", "grupo", "otros"] as const;
 const QUE = ["r", "w", "x"] as const;
 const NOMBRE: Record<string, string> = { r: "leer", w: "escribir", x: "ejecutar" };
 
-/** Rondas: lo que se pide y los nueve bits esperados, por filas. */
 const RONDAS: { text: string; bits: boolean[][]; why: string }[] = [
   {
     text: "El dueño puede hacer de todo y nadie más puede tocarlo.",
@@ -93,11 +85,9 @@ export function Candado({ chapter, onFinish }: GameProps) {
           <div key={i} className={`h-3 flex-1 border-2 border-ink ${i < idx ? "bg-ok" : i === idx ? "bg-accent" : "bg-bg-2"}`} />
         ))}
       </div>
-
       <section className={`card mt-4 p-5 sm:p-6 ${checked && !bien ? "shake" : ""}`}>
         <h2 className="text-2xl font-semibold leading-snug">{r.text}</h2>
         <p className="mt-1 text-muted">Marca los permisos en la rejilla.</p>
-
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-[320px]">
             <thead>
@@ -147,12 +137,10 @@ export function Candado({ chapter, onFinish }: GameProps) {
             </tbody>
           </table>
         </div>
-
         <div className="card-flat mt-5 flex flex-wrap items-center justify-center gap-5 p-4">
           <span className="font-crt text-3xl text-[var(--term-text)]">{letras(bits)}</span>
           <span className="font-pixel text-lg text-accent">{octal(bits)}</span>
         </div>
-
         {!checked ? (
           <button className="btn btn-primary mt-5 w-full py-3" onClick={comprobar}>
             Cerrar el candado
@@ -176,7 +164,6 @@ export function Candado({ chapter, onFinish }: GameProps) {
           </div>
         )}
       </section>
-
       <p className="mt-3 text-sm text-muted">
         Candado {idx + 1} de {rondas.length} · {score} aciertos
       </p>

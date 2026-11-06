@@ -7,13 +7,6 @@ import { BossSprite } from "@/components/story/Enemies";
 import { PixelTux } from "@/components/Pixel";
 import type { GameProps } from "./types";
 
-/**
- * Sigue la ruta: recorrer los saltos de la conexión y, en cada uno, elegir la
- * herramienta con la que se comprueba ese tramo.
- *
- * Los saltos van en orden a propósito: lo que se aprende es el orden en el que
- * se diagnostica una red, de dentro hacia fuera.
- */
 export function Ruta({ chapter, onFinish }: GameProps) {
   const saltos = RUTA;
   const [idx, setIdx] = useState(0);
@@ -45,7 +38,6 @@ export function Ruta({ chapter, onFinish }: GameProps) {
 
   return (
     <div>
-      {/* el camino del paquete */}
       <ol className="flex flex-wrap items-center gap-1.5" aria-label="Saltos de la ruta">
         {saltos.map((h, i) => (
           <li key={h.name} className="flex items-center gap-1.5">
@@ -60,7 +52,6 @@ export function Ruta({ chapter, onFinish }: GameProps) {
           </li>
         ))}
       </ol>
-
       {chapter.boss && esUltimo && (
         <div className="card-flat mt-4 flex items-center gap-3 p-3">
           <BossSprite id={chapter.boss} size={44} />
@@ -70,13 +61,11 @@ export function Ruta({ chapter, onFinish }: GameProps) {
           </div>
         </div>
       )}
-
       <section className={`card mt-4 p-5 sm:p-6 ${elegida && !bien ? "shake" : ""}`}>
         <p className="font-pixel text-[11px] text-muted">
           SALTO {idx + 1} · {s.name.toUpperCase()}
         </p>
         <h2 className="mt-3 text-2xl font-semibold leading-snug">{s.question}</h2>
-
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {s.options.map((o) => {
             const buena = elegida && o === s.answer;
@@ -95,7 +84,6 @@ export function Ruta({ chapter, onFinish }: GameProps) {
             );
           })}
         </div>
-
         <div aria-live="assertive">
           {elegida && (
             <div

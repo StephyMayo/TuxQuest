@@ -1,22 +1,13 @@
-// Comprueba que cada avatar del catálogo apunte a un archivo que existe de
-// verdad en public/, y que las medidas declaradas sean las del archivo.
-//
-// Hace falta porque un desajuste aquí no rompe la compilación: el build pasa
-// y las imágenes salen partidas en producción.
-//
-// Uso: npm run check:imagenes
 import { readFileSync, existsSync } from "node:fs";
 import { SHOP_ITEMS } from "../src/data/shop.ts";
 
-/** Ancho y alto de un PNG o un WebP, leídos de la cabecera. */
 function medidas(buf: Buffer): { w: number; h: number } | null {
-  // PNG: IHDR en los bytes 16-24
   if (buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
     return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
   }
   if (buf.subarray(0, 4).toString("ascii") === "RIFF" && buf.subarray(8, 12).toString("ascii") === "WEBP") {
     const tipo = buf.subarray(12, 16).toString("ascii");
-    // VP8L (sin pérdida): 14 bits de ancho y 14 de alto, menos uno, empaquetados
+
     if (tipo === "VP8L") {
       const bits = buf.readUInt32LE(21);
       return { w: (bits & 0x3fff) + 1, h: ((bits >> 14) & 0x3fff) + 1 };

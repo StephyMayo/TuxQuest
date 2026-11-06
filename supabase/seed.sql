@@ -1,4 +1,3 @@
--- Generado automáticamente con `npm run seed`. No editar a mano.
 begin;
 
 insert into public.families (id, name, package_manager, sort) values

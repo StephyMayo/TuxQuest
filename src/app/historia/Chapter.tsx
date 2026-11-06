@@ -8,12 +8,12 @@ import {
   EPILOGUE,
   GAMES,
   INTERLUDES,
-  PASS_RATIO,
   PROLOGUE,
   STORY,
   chapterByTopic,
   chapterIndex,
 } from "@/data/story";
+import { MISSION_PASS_RATIO } from "@/data/catalog";
 import type { Question } from "@/data/types";
 import { PixelCoin, PixelTux, Stars, starsFor } from "@/components/Pixel";
 import { BossSprite, EnemySprite } from "@/components/story/Enemies";
@@ -30,7 +30,6 @@ import { Tablero } from "./games/Tablero";
 import { TerminalGuiada } from "./games/TerminalGuiada";
 import type { GameProps } from "./games/types";
 
-/** El capítulo se recorre en cuatro pasos. */
 type Phase = "historia" | "reglas" | "juego" | "final";
 
 const JUEGOS: Record<string, (p: GameProps) => React.ReactElement> = {
@@ -72,7 +71,6 @@ export function Chapter() {
     setPhase("final");
   }, []);
 
-  // guardar al terminar
   useEffect(() => {
     if (phase !== "final" || !result || !chapter || savingRef.current) return;
     savingRef.current = true;
@@ -89,8 +87,7 @@ export function Chapter() {
         setCoins(coins);
         setSaved({ coins });
       })
-      // Sin esto el fallo era invisible: el capítulo se veía superado pero
-      // no se guardaba, así que no daba monedas ni abría el siguiente.
+
       .catch(() => setSaveError(true));
   }, [phase, result, chapter, backend, setCoins, family, difficulty]);
 
@@ -126,7 +123,6 @@ export function Chapter() {
 
   const game = GAMES[chapter.game];
 
-  // ---------- 1. La historia ----------
   if (phase === "historia") {
     const prologo = idx === 0 ? PROLOGUE : null;
     const interludio = INTERLUDES[chapter.act] && STORY[idx - 1]?.act !== chapter.act ? INTERLUDES[chapter.act] : null;
@@ -135,23 +131,19 @@ export function Chapter() {
         <Link href={`/historia?${query}`} className="btn btn-ghost btn-sm">
           ◀ Mapa de la historia
         </Link>
-
         {prologo && <Narracion title={prologo.title} text={prologo.text} tone="prologo" />}
         {interludio && <Narracion title={interludio.title} text={interludio.text} tone="interludio" />}
-
         <div className="card mt-6 p-6 sm:p-8">
           <p className="font-pixel text-[11px] text-muted">
             ACTO {chapter.act} · CAPÍTULO {idx + 1}
           </p>
           <h1 className="pixel-title mt-3 text-lg sm:text-2xl">{chapter.title.toUpperCase()}</h1>
           <p className="mt-2 font-game text-xl text-muted">{chapter.place}</p>
-
           <div className="mt-6 space-y-3 text-lg leading-relaxed">
             {chapter.intro.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           </div>
-
           <button className="btn btn-primary mt-8 w-full py-3 text-lg" onClick={() => setPhase("reglas")}>
             Continuar ▶
           </button>
@@ -160,18 +152,15 @@ export function Chapter() {
     );
   }
 
-  // ---------- 2. Cómo se juega ----------
   if (phase === "reglas") {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <button className="btn btn-ghost btn-sm" onClick={() => setPhase("historia")}>
           ◀ Volver a la historia
         </button>
-
         <div className="card mt-6 p-6 sm:p-8">
           <p className="font-pixel text-[11px] text-muted">CÓMO SE JUEGA ESTE CAPÍTULO</p>
           <h1 className="pixel-title mt-3 text-lg sm:text-xl">{game.name.toUpperCase()}</h1>
-
           <ol className="mt-6 space-y-4">
             {game.rules.map((r, i) => (
               <li key={i} className="flex items-start gap-3 text-lg">
@@ -182,15 +171,13 @@ export function Chapter() {
               </li>
             ))}
           </ol>
-
           <div className="card-flat mt-6 p-4">
             <p className="font-game text-lg text-accent">Lo que aprendes aquí</p>
             <p className="mt-1 text-muted">{chapter.lesson}</p>
             <p className="mt-2 text-sm text-muted">
-              Se supera acertando al menos el {Math.round(PASS_RATIO * 100)} %.
+              Se supera acertando al menos el {Math.round(MISSION_PASS_RATIO * 100)} %.
             </p>
           </div>
-
           {chapter.enemies.length > 0 && (
             <div className="mt-6">
               <p className="font-game text-lg">Con lo que te vas a encontrar</p>
@@ -217,7 +204,6 @@ export function Chapter() {
               </div>
             </div>
           )}
-
           <button className="btn btn-primary mt-8 w-full py-3 text-lg" onClick={() => setPhase("juego")}>
             ▶ Empezar
           </button>
@@ -226,7 +212,6 @@ export function Chapter() {
     );
   }
 
-  // ---------- 3. El minijuego ----------
   if (phase === "juego") {
     const Juego = JUEGOS[chapter.game];
     return (
@@ -249,10 +234,9 @@ export function Chapter() {
     );
   }
 
-  // ---------- 4. El desenlace ----------
   const { score, total } = result!;
   const ratio = total > 0 ? score / total : 0;
-  const won = ratio >= PASS_RATIO;
+  const won = ratio >= MISSION_PASS_RATIO;
   const stars = starsFor(ratio);
   const siguiente = won ? STORY[idx + 1] : undefined;
   const esFinal = won && idx === STORY.length - 1;
@@ -268,7 +252,6 @@ export function Chapter() {
           <Stars count={stars} size={44} />
         </div>
         <PixelTux size={72} bob={won} className={`mx-auto mt-6 ${won ? "" : "opacity-70 grayscale"}`} />
-
         <dl className="mt-8 grid grid-cols-2 gap-3">
           <div className="card-flat p-3">
             <dt className="font-game text-muted">Aciertos</dt>
@@ -281,7 +264,6 @@ export function Chapter() {
             <dd className={`mt-1 font-pixel text-base ${won ? "text-ok" : "text-bad"}`}>{Math.round(ratio * 100)}%</dd>
           </div>
         </dl>
-
         {won && (
           <div className="mt-6 space-y-3 text-left text-lg leading-relaxed">
             {chapter.outro.map((p, i) => (
@@ -291,7 +273,7 @@ export function Chapter() {
         )}
         {!won && (
           <p className="mt-6 text-muted">
-            Hace falta acertar al menos el {Math.round(PASS_RATIO * 100)} % para seguir. Vuelve a intentarlo: ahora ya
+            Hace falta acertar al menos el {Math.round(MISSION_PASS_RATIO * 100)} % para seguir. Vuelve a intentarlo: ahora ya
             sabes de qué va.
           </p>
         )}
@@ -307,7 +289,6 @@ export function Chapter() {
         {saveError && <p className="mt-3 text-sm text-bad">No se pudo guardar el capítulo. Revisa tu conexión e inténtalo otra vez.</p>}
 
         {esFinal && <Narracion title={EPILOGUE.title} text={EPILOGUE.text} tone="epilogo" />}
-
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <button className={`btn ${won ? "btn-ghost" : "btn-primary"}`} onClick={reiniciar}>
             ↻ {won ? "Repetir" : "Reintentar"}

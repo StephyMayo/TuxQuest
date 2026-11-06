@@ -9,7 +9,6 @@ interface AuthState {
   player: Player | null;
   loading: boolean;
   authError: string | null;
-  /** Cuántas unidades tiene de cada objeto. Vacío mientras carga, sin sesión o si falla la carga. */
   inventory: Inventory;
   inventoryError: string | null;
   setPlayer: (p: Player | null) => void;

@@ -19,7 +19,6 @@ const BOOST_ICON: Record<string, React.ReactNode> = {
   boost_shield: <PixelShield size={22} />,
 };
 
-/** Campos del perfil que sí se pueden cambiar a mano. */
 type Field = "nick" | "familia" | "correo";
 
 interface EditState {
@@ -27,7 +26,7 @@ interface EditState {
   draft: string;
   saving: boolean;
   error: string | null;
-  /** Aviso que no es un error, como el del enlace de confirmación. */
+
   note: string | null;
 }
 
@@ -35,7 +34,7 @@ interface Stats {
   done: number;
   stars: number;
   played: number;
-  /** Familia donde mas misiones ha superado. */
+
   family: string;
 }
 
@@ -45,7 +44,7 @@ export function Profile() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // edición del perfil: solo hay un campo abierto a la vez
+
   const [edit, setEdit] = useState<EditState>({ field: null, draft: "", saving: false, error: null, note: null });
 
   useEffect(() => {
@@ -53,7 +52,6 @@ export function Profile() {
     backend
       .getProgress()
       .then((filas) => {
-        // La familia ya es un campo propio de cada fila: se cuenta directo.
         const porFamilia = new Map<string, number>();
         for (const f of filas) {
           if (!f.completed) continue;
@@ -75,7 +73,7 @@ export function Profile() {
   const frame = frameStyle(loadout.frame);
   const boosts = itemsOfKind("boost").filter((b) => (inventory[b.id] ?? 0) > 0);
   const boostCount = boosts.reduce((n, b) => n + (inventory[b.id] ?? 0), 0);
-  // Si el jugador eligió familia manda esa; si no, la que más ha jugado.
+
   const familiaTexto = player.family
     ? (familyById(player.family)?.name ?? player.family)
     : stats
@@ -111,7 +109,6 @@ export function Profile() {
           setPlayer({ ...player, email: draft.trim().toLowerCase() });
           cerrar();
         } else {
-          // Supabase no cambia el correo hasta que se pulsa el enlace.
           setEdit((e) => ({
             ...e,
             saving: false,
@@ -142,12 +139,10 @@ export function Profile() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      {/* ---------- Ficha estilo neofetch ---------- */}
       <div
         className="card crt overflow-hidden"
         style={{ borderColor: frame.border, boxShadow: `inset 3px 3px 0 #ffffff14, inset -3px -3px 0 #00000040, 6px 6px 0 #06030f, 0 0 24px ${frame.glow}` }}
       >
-        {/* barra de la ventana */}
         <div className="relative z-10 flex items-center gap-2 border-b-[3px] border-ink bg-panel-2 px-3 py-2">
           <span className="h-3 w-3 border-2 border-ink bg-bad" aria-hidden="true" />
           <span className="h-3 w-3 border-2 border-ink bg-accent" aria-hidden="true" />
@@ -156,17 +151,14 @@ export function Profile() {
             {player.username}@tuxquest — perfil
           </span>
         </div>
-
         <div className="relative z-10 p-5 sm:p-6">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
-            {/* el avatar hace de logo de la distro y llena el alto de la ventana */}
             <span
               className="mx-auto grid h-56 w-44 shrink-0 place-items-center bg-bg-2 p-3 sm:mx-0 sm:h-auto sm:w-48"
               style={{ border: `4px solid ${frame.border}`, boxShadow: `0 0 16px ${frame.glow}` }}
             >
               <Avatar id={loadout.avatar} stretch bob title={`Avatar de ${player.username}`} />
             </span>
-
             <dl className="w-full min-w-0 flex-1 font-crt text-[18px] leading-tight sm:text-[21px]">
               <p className="flex flex-wrap items-center gap-2">
                 <span className="truncate">
@@ -176,8 +168,6 @@ export function Profile() {
                 </span>
               </p>
               <div className="my-2 border-t-2 border-line" aria-hidden="true" />
-
-              {/* Lo que se puede cambiar */}
               <Editable
                 k="Usuario"
                 v={player.username}
@@ -193,8 +183,7 @@ export function Profile() {
               <Editable
                 k="Familia"
                 v={familiaTexto}
-                // El desplegable se abre en la familia que ya tenga elegida, no
-                // en «que se deduzca»: así no la borra sin querer al guardar.
+
                 current={player.family ?? ""}
                 field="familia"
                 edit={edit}
@@ -221,10 +210,7 @@ export function Profile() {
                 onCancel={cerrar}
                 onDraft={setDraft}
               />
-
               <div className="my-2 border-t-2 border-line" aria-hidden="true" />
-
-              {/* Lo que sale del juego y no se toca a mano */}
               <Line k="ID" v={player.id.slice(0, 8)} />
               <Line k="Título" v={titleText(loadout.title)} />
               <Line k="Avatar" v={itemById(loadout.avatar)?.name ?? loadout.avatar} />
@@ -234,8 +220,6 @@ export function Profile() {
               <Line k="Estrellas" v={stats ? `${stats.stars} de ${stats.played * 3}` : "…"} />
               <Line k="Boosts" v={boostCount === 0 ? "ninguno" : `${boostCount} en el inventario`} />
               <Line k="Modo" v={backend.mode === "supabase" ? "en línea" : "demo · solo este navegador"} />
-
-              {/* la fila de colores que saca neofetch al final */}
               <div className="mt-5 flex flex-wrap justify-center gap-1.5 sm:justify-start" aria-hidden="true">
                 {["#06030f", "#ff5c6c", "#4cff8f", "#ffd23f", "#6ab8ff", "#ff5d8f", "#3be8ff", "#f3efff"].map((c) => (
                   <span key={c} className="h-4 w-7 border-2 border-ink" style={{ background: c }} />
@@ -245,7 +229,6 @@ export function Profile() {
           </div>
         </div>
       </div>
-
       <div className="mt-4 flex flex-wrap gap-3">
         <Link href="/tienda" className="btn btn-primary btn-sm">
           <PixelBag size={16} /> Ir a la tienda
@@ -254,8 +237,6 @@ export function Profile() {
           ▶ Jugar
         </Link>
       </div>
-
-      {/* ---------- Boosts en el inventario ---------- */}
       <section className="mt-10" aria-labelledby="boosts">
         <h2 id="boosts" className="pixel-title text-sm">
           MIS BOOSTS
@@ -283,13 +264,10 @@ export function Profile() {
         )}
         {boosts.length > 0 && <p className="mt-3 text-sm text-muted">Se activan dentro de una misión, desde la barra de boosts.</p>}
       </section>
-
-      {/* ---------- Personalización ---------- */}
       <section className="mt-10" aria-labelledby="personalizar">
         <h2 id="personalizar" className="pixel-title text-sm">
           PERSONALIZAR
         </h2>
-
         <div className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Ranuras de personalización">
           {SLOTS.map((s) => (
             <button
@@ -307,11 +285,9 @@ export function Profile() {
           ))}
         </div>
         <p className="mt-3 text-muted">{KIND_HELP[slot]}</p>
-
         <div aria-live="polite">
           {error && <p className="mt-4 border-[3px] border-ink bg-bad/20 px-3 py-2 text-sm text-[#ffc2c8]">✖ {error}</p>}
         </div>
-
         <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {itemsOfKind(slot).map((item) => {
             const has = owns(inventory, item.id);
@@ -320,7 +296,6 @@ export function Profile() {
               <li
                 key={item.id}
                 className={`card flex gap-4 p-4 ${
-                  // los avatares se ven en vertical y en grande; títulos y marcos en fila
                   slot === "avatar" ? "flex-col items-center text-center" : "items-center"
                 } ${equipped ? "outline-[3px] outline-offset-4 outline-accent" : ""} ${has ? "" : "opacity-60"}`}
               >
@@ -374,10 +349,6 @@ function SlotPreview({ slot, id, name }: { slot: Slot; id: string; name: string 
   );
 }
 
-/**
- * Línea de la ficha que se puede cambiar. Muestra el valor con un botón al
- * lado y, al pulsarlo, se convierte en el formulario para ese campo.
- */
 function Editable({
   k,
   v,
@@ -395,12 +366,12 @@ function Editable({
 }: {
   k: string;
   v: string;
-  /** Valor con el que se abre el formulario, si no vale el que se muestra. */
+
   current?: string;
   field: Field;
   edit: EditState;
   help: string;
-  /** Si viene, se edita con un desplegable en vez de con un cuadro de texto. */
+
   options?: { id: string; name: string }[];
   type?: string;
   maxLength?: number;
@@ -462,12 +433,10 @@ function Editable({
           />
         )}
         <p className="mt-1.5 font-game text-base text-muted">{help}</p>
-
         <div aria-live="polite">
           {edit.error && <p className="mt-2 font-game text-base text-bad">✖ {edit.error}</p>}
           {edit.note && <p className="mt-2 font-game text-base text-ok">✔ {edit.note}</p>}
         </div>
-
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="submit" className="btn btn-primary btn-sm" disabled={edit.saving}>
             {edit.saving ? "Guardando…" : "Guardar"}
@@ -481,7 +450,6 @@ function Editable({
   );
 }
 
-/** Una linea "clave: valor" de la ficha, al estilo de neofetch. */
 function Line({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex gap-2">

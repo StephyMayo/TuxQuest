@@ -28,7 +28,6 @@ interface Result {
   timedOut: boolean;
 }
 
-/** Segundos que añade el boost de tiempo. */
 const TIME_BOOST = 15;
 
 export function Game() {
@@ -45,7 +44,7 @@ export function Game() {
   const [hint, setHint] = useState(NO_HINT);
   const [saved, setSaved] = useState<{ coins: number; doubled: boolean } | null>(null);
   const [saveError, setSaveError] = useState(false);
-  // Boosts: "x2" se activa para toda la misión, el resto se gastan al usarlos
+
   const [x2, setX2] = useState(false);
   const [boostBusy, setBoostBusy] = useState<string | null>(null);
   const [boostError, setBoostError] = useState<string | null>(null);
@@ -74,7 +73,6 @@ export function Game() {
     [rules],
   );
 
-  // Cargar preguntas y armar la partida
   useEffect(() => {
     if (!player || !valid) return;
     backend
@@ -104,7 +102,6 @@ export function Game() {
     [q, feedback],
   );
 
-  // Temporizador (medio: 60 s, difícil: 30 s)
   useEffect(() => {
     if (left === null || feedback || finished || !q) return;
     const t = setTimeout(() => {
@@ -118,12 +115,11 @@ export function Game() {
     if (feedback) nextRef.current?.focus();
   }, [feedback]);
 
-  // Guardar resultado al terminar
   useEffect(() => {
     if (!finished || savingRef.current || !mission || !rules) return;
     savingRef.current = true;
     const correct = results.filter((r) => r.correct).length;
-    // El servidor decide si el x2 se aplica (y lo descuenta); aquí solo avisamos.
+
     const doubled = x2 && (inventory.boost_coins ?? 0) > 0;
     backend
       .finishRun(
@@ -152,7 +148,6 @@ export function Game() {
     setIdx((i) => i + 1);
   }
 
-  /** Gasta un boost en el servidor y aplica su efecto si todo salió bien. */
   async function spendBoost(id: "boost_time" | "boost_hint" | "boost_shield", apply: () => void) {
     if (boostBusy) return;
     setBoostError(null);
@@ -167,7 +162,6 @@ export function Game() {
     }
   }
 
-  /** El escudo convierte el fallo actual en acierto. */
   function activateShield() {
     if (!feedback || feedback.correct || shielded) return;
     spendBoost("boost_shield", () => {
@@ -205,7 +199,6 @@ export function Game() {
     return true;
   }
 
-  // ---------- Render ----------
   if (!player) return null;
   if (!valid || (missions && !mission))
     return (
@@ -289,7 +282,6 @@ export function Game() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      {/* HUD */}
       <div className="card flex flex-wrap items-center gap-x-5 gap-y-3 p-3 sm:p-4">
         <Link href={`/jugar/misiones?${query}`} className="btn btn-ghost btn-sm" aria-label="Volver al mapa de misiones">
           ◀
@@ -319,12 +311,9 @@ export function Game() {
           )}
         </div>
       </div>
-
-      {/* Barra de boosts (solo si el jugador tiene alguno) */}
       {hasBoosts && (
         <div className="card-flat mt-4 flex flex-wrap items-center gap-2.5 p-3">
           <span className="font-game text-lg text-muted">Boosts:</span>
-
           {qty("boost_coins") > 0 && (
             <button
               className={`btn btn-sm ${x2 ? "btn-primary" : "btn-ghost"}`}
@@ -369,8 +358,6 @@ export function Game() {
           )}
         </div>
       )}
-
-      {/* Progreso de retos + tiempo */}
       <div className="mt-4 flex gap-1.5" aria-hidden="true">
         {questions.map((_, i) => (
           <div
@@ -388,9 +375,7 @@ export function Game() {
           <span className={`w-12 text-right font-pixel text-xs tabular-nums ${urgent ? "blink text-bad" : ""}`}>{left}s</span>
         </div>
       )}
-
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        {/* Reto */}
         <section key={idx} className={`card p-5 sm:p-6 ${feedback && !feedback.correct ? "shake" : ""}`} aria-labelledby="reto">
           <span className="chip text-cyan">{TYPE_LABEL[q.type]}</span>
           <h2 id="reto" className="mt-4 text-2xl font-semibold leading-snug">
@@ -428,7 +413,6 @@ export function Game() {
             </div>
           )}
 
-          {/* Pista */}
           {!feedback && rules!.hintCost !== null && (
             <div className="mt-6">
               {hint.shown ? (
@@ -443,8 +427,6 @@ export function Game() {
               {hint.error && <p className="mt-2 text-sm text-bad">{hint.error}</p>}
             </div>
           )}
-
-          {/* Corrección inmediata (RF-08) */}
           <div aria-live="assertive">
             {feedback && (
               <div className={`pop mt-6 border-[3px] border-ink p-4 ${feedback.correct ? "bg-ok/15" : "bg-bad/15"}`} style={{ boxShadow: "4px 4px 0 #06030f" }}>
@@ -463,7 +445,7 @@ export function Game() {
                     <code className="crt inline-block border-2 border-ink px-2 font-crt text-xl text-[var(--term-text)]">{q.type === "choice" ? q.answers[0] : correctCommand(q)}</code>
                   </p>
                 )}
-                {/* Al fallar, la guía de la distribución explica el error */}
+
                 {!feedback.correct || shielded ? (
                   <MascotTip familyId={family!.id} timedOut={feedback.timedOut} seed={idx}>
                     {q.explanation}
@@ -472,14 +454,12 @@ export function Game() {
                   <p className="mt-2 text-muted">{q.explanation}</p>
                 )}
 
-                {/* El escudo convierte este fallo en acierto */}
                 {!feedback.correct && !shielded && qty("boost_shield") > 0 && (
                   <button className="btn btn-cyan mt-4 w-full" disabled={boostBusy === "boost_shield"} onClick={activateShield}>
                     <PixelShield size={16} />
                     {boostBusy === "boost_shield" ? "Usando…" : `Usar Escudo de Tux (${qty("boost_shield")}) y salvar el reto`}
                   </button>
                 )}
-
                 <button ref={nextRef} className="btn btn-primary mt-4" onClick={next}>
                   {idx + 1 < questions.length ? "Siguiente reto ▶" : "Ver resultados ▶"}
                 </button>
@@ -487,8 +467,6 @@ export function Game() {
             )}
           </div>
         </section>
-
-        {/* Terminal simulada (RF-05) */}
         <section aria-label="Terminal">
           <Terminal
             key={`${idx}-${q.id}`}

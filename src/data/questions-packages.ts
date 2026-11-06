@@ -98,7 +98,6 @@ function packageQuestions(m: PackageManager): Question[] {
   const fmtOptions = [m.format, ...[".deb", ".rpm", ".pkg.tar.zst", ".apk"].filter((f) => f !== m.format)].slice(0, 4);
 
   return [
-    // Fácil
     choice(id("f1"), "packages", `¿Qué gestor de paquetes usa la familia ${m.familyName}?`, [m.pm, ...others.map((o) => o.pm)],
       `Empieza con la letra «${m.pm[0]}».`, `Las distribuciones de la familia ${m.familyName} instalan programas con ${m.pm}.`, s),
     complete(id("f2"), "packages", "Instala firefox.", `sudo ___ ${m.installSub} firefox`, [m.pm],
@@ -114,7 +113,6 @@ function packageQuestions(m: PackageManager): Question[] {
     choice(id("f6"), "packages", `¿Qué formato de paquete usa la familia ${m.familyName}?`, fmtOptions,
       `Es el formato que entiende ${m.pm}.`, `Los paquetes de ${m.familyName} tienen la extensión ${m.format}.`, s),
 
-    // Medio
     write(id("m1"), "medium", "packages", "Instala el reproductor vlc.", m.install("vlc"),
       `sudo + ${m.pm} + acción de instalar.`, `${m.install("vlc")[0]} instala vlc desde los repositorios.`, s),
     write(id("m2"), "medium", "packages", "Desinstala el programa gimp.", m.remove("gimp"),
@@ -135,7 +133,6 @@ function packageQuestions(m: PackageManager): Question[] {
       m.pm === "pacman" ? "Q de query." : "list / search con un filtro de instalados.",
       `${m.listInstalled[0]} muestra todos los paquetes instalados.`, s),
 
-    // Difícil
     write(id("d1"), "hard", "packages", `Descargaste ${m.localFile} en la carpeta actual. Instálalo.`, m.local,
       m.pm === "pacman" ? "U de upgrade, para archivos locales." : "Indica la ruta del archivo con ./",
       `${m.local[0]} instala un paquete descargado a mano.`, s),
@@ -157,7 +154,6 @@ function packageQuestions(m: PackageManager): Question[] {
 }
 
 const DISTRO_SPECIFIC: Question[] = [
-  // Debian
   choice("x-ubuntu-f1", "packages", "¿Qué formato universal de paquetes viene preinstalado en Ubuntu?", ["Snap", "Flatpak", "AppImage", "AUR"],
     "Lo creó Canonical, la empresa detrás de Ubuntu.", "Ubuntu trae Snap por defecto: sudo snap install programa.", { familyId: "debian", distroId: "ubuntu" }),
   write("x-ubuntu-m1", "medium", "packages", "Instala VLC como paquete snap.", ["sudo snap install vlc"],
@@ -170,7 +166,7 @@ const DISTRO_SPECIFIC: Question[] = [
     "flatpak install + repositorio + id de la aplicación.", "Los flatpaks se identifican con un id del tipo com.empresa.App.", { familyId: "debian", distroId: "mint" }),
   write("x-debian-m1", "medium", "permissions", "En Debian puede que sudo no esté configurado. Conviértete en root con su.", ["su -", "su", "su - root", "su root"],
     "switch user.", "su - pide la contraseña de root y abre su sesión con su entorno.", { familyId: "debian", distroId: "debian" }),
-  // Arch
+
   choice("x-arch-f1", "packages", "¿Cómo se llama el repositorio comunitario de Arch con miles de paquetes extra?", ["AUR", "PPA", "EPEL", "OBS"],
     "Arch User Repository.", "El AUR contiene recetas de la comunidad; se usa con ayudantes como yay o paru.", { familyId: "arch" }),
   write("x-arch-d1", "hard", "packages", "Elimina los paquetes huérfanos (dependencias que ya nadie usa).", ["sudo pacman -Rns $(pacman -Qdtq)", "sudo pacman -Rns $(pacman -Qtdq)"],
@@ -187,7 +183,7 @@ const DISTRO_SPECIFIC: Question[] = [
     "pamac + install.", "pamac es el gestor de Manjaro; pide la contraseña por sí mismo, no uses sudo.", { familyId: "arch", distroId: "manjaro" }),
   write("x-manjaro-d1", "hard", "packages", "Ordena los servidores espejo de Manjaro por velocidad.", ["sudo pacman-mirrors --fasttrack", "sudo pacman-mirrors -f"],
     "pacman-mirrors con la opción fasttrack.", "pacman-mirrors --fasttrack elige los espejos más rápidos.", { familyId: "arch", distroId: "manjaro" }),
-  // Red Hat
+
   write("x-fedora-m1", "medium", "packages", "Instala Spotify desde Flathub usando flatpak.", ["flatpak install flathub com.spotify.Client", "flatpak install com.spotify.Client"],
     "flatpak install + repositorio + id de la aplicación.", "Fedora integra Flatpak; Flathub es el repositorio principal.", { familyId: "redhat", distroId: "fedora" }),
   write("x-redhat-d1", "hard", "permissions", "La familia Red Hat usa SELinux. Muestra su modo actual.", ["getenforce", "sestatus"],
@@ -198,7 +194,7 @@ const DISTRO_SPECIFIC: Question[] = [
     "Se instala como un paquete llamado epel-release.", "EPEL añade miles de paquetes que no vienen en los repositorios base.", { familyId: "redhat", distroId: "alma" }),
   write("x-rocky-d1", "hard", "network", "Abre el puerto http en el firewall de forma permanente.", ["sudo firewall-cmd --permanent --add-service=http", "sudo firewall-cmd --add-service=http --permanent"],
     "firewall-cmd con --permanent y --add-service.", "En la familia Red Hat el firewall se gestiona con firewall-cmd. Luego aplica con --reload.", { familyId: "redhat", distroId: "rocky" }),
-  // SUSE
+
   choice("x-suse-f1", "system", "¿Cómo se llama la herramienta clásica de configuración de openSUSE?", ["YaST", "Synaptic", "Pamac", "Cockpit"],
     "Yet another Setup Tool.", "YaST configura casi todo el sistema, en modo gráfico o en la terminal.", { familyId: "suse" }),
   write("x-tumble-m1", "medium", "packages", "Actualiza Tumbleweed de la forma recomendada para una distribución rolling.", ["sudo zypper dup", "sudo zypper dist-upgrade"],
@@ -211,8 +207,3 @@ const DISTRO_SPECIFIC: Question[] = [
 ];
 
 export const PACKAGE_QUESTIONS: Question[] = [...PMS.flatMap(packageQuestions), ...DISTRO_SPECIFIC];
-
-export const PACKAGE_MANAGERS = Object.fromEntries(PMS.map((m) => [m.family, { pm: m.pm, rootError: m.rootError }])) as Record<
-  FamilyId,
-  { pm: string; rootError: string }
->;

@@ -1,19 +1,10 @@
-/**
- * Contenido de los minijuegos del modo historia que no sale del banco de
- * preguntas: rastro, procesos, tablero y ruta.
- */
-
-// ---------------------------------------------------------------------------
-// Rastro: marcar las líneas que encajan con un patrón (lo que hacen find y grep)
-// ---------------------------------------------------------------------------
 export interface RastroRonda {
-  /** Lo que se busca, tal cual se le pasaría al comando. */
   pattern: string;
-  /** Con qué comando se haría de verdad. */
+
   tool: string;
-  /** Qué significa el patrón, se enseña al corregir. */
+
   hint: string;
-  /** Cada línea con si encaja o no. */
+
   lines: { text: string; match: boolean }[];
 }
 
@@ -85,9 +76,6 @@ export const RASTRO: RastroRonda[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Procesos: cerrar los que sobran sin tocar los del sistema
-// ---------------------------------------------------------------------------
 export interface Proceso {
   pid: number;
   user: string;
@@ -95,9 +83,9 @@ export interface Proceso {
   mem: number;
   state: string;
   cmd: string;
-  /** true = hay que cerrarlo. */
+
   rogue: boolean;
-  /** Por qué sí o por qué no, se enseña al final. */
+
   why: string;
 }
 
@@ -114,9 +102,6 @@ export const PROCESOS: Proceso[] = [
   { pid: 6677, user: "tux", cpu: 0.0, mem: 0.0, state: "Z", cmd: "[respaldo] <defunct>", rogue: true, why: "Zombi del respaldo de anoche." },
 ];
 
-// ---------------------------------------------------------------------------
-// Tablero: llevar cada servicio a su estado con la acción correcta
-// ---------------------------------------------------------------------------
 export type EstadoServicio = "activo" | "parado" | "fallido";
 export type AccionServicio = "start" | "stop" | "restart" | "enable" | "status";
 
@@ -131,7 +116,7 @@ export const ACCIONES: Record<AccionServicio, string> = {
 export interface ServicioRonda {
   name: string;
   from: EstadoServicio;
-  /** Lo que hay que conseguir, con palabras. */
+
   goal: string;
   answer: AccionServicio;
   why: string;
@@ -148,19 +133,16 @@ export const SERVICIOS: ServicioRonda[] = [
   { name: "apache2", from: "activo", goal: "aplicar un cambio de configuración", answer: "restart", why: "La configuración se lee al arrancar, así que hay que reiniciarlo para que la tome." },
 ];
 
-// ---------------------------------------------------------------------------
-// Ruta: encontrar en qué salto se rompe la conexión
-// ---------------------------------------------------------------------------
 export interface Salto {
   name: string;
-  /** Lo que se comprueba en este tramo. */
+
   question: string;
-  /** Herramienta correcta. */
+
   answer: string;
   options: string[];
-  /** Lo que sale al usarla. */
+
   result: string;
-  /** Si aquí es donde está la avería. */
+
   broken: boolean;
   why: string;
 }

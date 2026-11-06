@@ -12,7 +12,6 @@ const base = (s: Scope = {}) => ({
   ...(s.cwd ? { cwd: s.cwd } : {}),
 });
 
-/** Opción múltiple (fácil). La primera opción es la correcta; el juego las mezcla. */
 export function choice(
   id: string,
   topic: Topic,
@@ -25,7 +24,6 @@ export function choice(
   return { id, ...base(scope), difficulty: "easy", type: "choice", topic, prompt, answers: [options[0]], options, hint, explanation };
 }
 
-/** Completar el comando (fácil). La plantilla usa ___ para el hueco. */
 export function complete(
   id: string,
   topic: Topic,
@@ -39,7 +37,6 @@ export function complete(
   return { id, ...base(scope), difficulty: "easy", type: "complete", topic, prompt, template, answers, hint, explanation };
 }
 
-/** Escribir el comando completo (medio o difícil). */
 export function write(
   id: string,
   difficulty: Exclude<Difficulty, "easy">,
@@ -53,7 +50,6 @@ export function write(
   return { id, ...base(scope), difficulty, type: "write", topic, prompt, answers, hint, explanation };
 }
 
-/** Corregir un comando con error (difícil). */
 export function fix(
   id: string,
   topic: Topic,

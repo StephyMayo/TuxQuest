@@ -24,7 +24,6 @@ export function Shop() {
   const [error, setError] = useState<string | null>(null);
   const [bought, setBought] = useState<string | null>(null);
 
-  // Misiones completadas: hacen falta para saber qué está desbloqueado
   useEffect(() => {
     if (!player) return;
     backend
@@ -68,8 +67,6 @@ export function Shop() {
           </Link>
         </div>
       </div>
-
-      {/* Pestañas por tipo de objeto */}
       <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Categorías de la tienda">
         {SHOP_ORDER.map((kind) => (
           <button
@@ -88,11 +85,9 @@ export function Shop() {
         ))}
       </div>
       <p className="mt-3 text-muted">{KIND_HELP[tab]}</p>
-
       <div aria-live="polite">
         {error && <p className="mt-4 border-[3px] border-ink bg-bad/20 px-3 py-2 text-sm text-[#ffc2c8]">✖ {error}</p>}
       </div>
-
       <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {itemsOfKind(tab).map((item) => {
           const qty = inventory[item.id] ?? 0;
@@ -100,7 +95,7 @@ export function Shop() {
           const locked = !!item.requires && done < item.requires;
           const poor = player.coins < item.price;
           const free = item.price === 0;
-          // Los cosméticos se compran una sola vez; los boosts se acumulan
+
           const pendiente = !locked && (item.stackable || !has);
           const canBuy = pendiente && !poor;
 
@@ -108,19 +103,15 @@ export function Shop() {
             <li key={item.id} className="card flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">
                 <ItemPreview item={item} />
-                {/* El precio sale en rojo solo cuando lo único que falta son monedas */}
                 {!free && (
                   <span className={`chip shrink-0 font-pixel text-[10px] ${poor && pendiente ? "text-bad" : "text-accent"}`}>
                     <PixelCoin size={14} /> {item.price}
                   </span>
                 )}
               </div>
-
               <h2 className="mt-4 text-xl font-semibold leading-tight">{item.name}</h2>
               <p className="mt-1 flex-1 text-sm text-muted">{item.description}</p>
-
               {item.stackable && qty > 0 && <p className="mt-3 font-game text-lg text-cyan">Tienes {qty}</p>}
-
               <div className="mt-4">
                 {locked ? (
                   <p className="card-flat flex items-center gap-2 p-3 text-sm text-muted">
@@ -148,7 +139,6 @@ export function Shop() {
           );
         })}
       </ul>
-
       <div className="card-flat mt-10 flex flex-col items-center gap-3 p-5 text-center sm:flex-row sm:text-left">
         <PixelTux size={44} bob />
         <p className="flex-1 text-muted">
@@ -162,7 +152,6 @@ export function Shop() {
   );
 }
 
-/** Miniatura del objeto según su tipo. */
 function ItemPreview({ item }: { item: ShopItem }) {
   if (item.kind === "boost") return <span className="grid h-14 w-14 place-items-center">{BOOST_ICON[item.id]}</span>;
   if (item.kind === "avatar") return <Avatar id={item.id} size={56} className="shrink-0" />;
