@@ -44,6 +44,15 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 
 En Vercel, agrega esas mismas dos variables en **Settings > Environment Variables**.
 
+### Actualizar una base Supabase que ya existe
+
+Si ya configuraste TuxQuest con una base de datos, no vuelvas a ejecutar todos los scripts.
+Abre el **SQL Editor** de Supabase, crea una consulta nueva, pega el contenido actualizado de
+`supabase/progreso.sql` y pulsa **Run**. Esto reemplaza `finish_run()` para que la base calcule
+las monedas; no borra el progreso existente. Después, reinicia la aplicación local para cargar
+el código nuevo. Si usas Vercel, espera a que se despliegue el commit y verifica que las variables
+de entorno estén configuradas en el entorno de despliegue.
+
 ### No deja crear más cuentas: el límite de correos
 
 Si al registrar al cuarto o quinto jugador el formulario responde que no se pueden enviar más correos,
