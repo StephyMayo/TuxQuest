@@ -101,14 +101,16 @@ export function Shop() {
           const poor = player.coins < item.price;
           const free = item.price === 0;
           // Los cosméticos se compran una sola vez; los boosts se acumulan
-          const canBuy = !locked && !poor && (item.stackable || !has);
+          const pendiente = !locked && (item.stackable || !has);
+          const canBuy = pendiente && !poor;
 
           return (
             <li key={item.id} className="card flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">
                 <ItemPreview item={item} />
+                {/* El precio sale en rojo solo cuando lo único que falta son monedas */}
                 {!free && (
-                  <span className={`chip shrink-0 font-pixel text-[10px] ${poor && canBuy ? "text-bad" : "text-accent"}`}>
+                  <span className={`chip shrink-0 font-pixel text-[10px] ${poor && pendiente ? "text-bad" : "text-accent"}`}>
                     <PixelCoin size={14} /> {item.price}
                   </span>
                 )}

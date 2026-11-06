@@ -212,7 +212,10 @@ export class Shell {
   private get(abs: string): Node | null {
     let n: Node = this.root;
     for (const seg of abs.split("/").filter(Boolean)) {
-      if (n.kind !== "dir" || !(seg in n.children)) return null;
+      // hasOwn y no "in": con `in` colarían las claves heredadas de
+      // Object.prototype, así que rutas como /constructor o /toString
+      // parecían existir y devolvían algo que no es un nodo.
+      if (n.kind !== "dir" || !Object.hasOwn(n.children, seg)) return null;
       n = n.children[seg];
     }
     return n;

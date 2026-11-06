@@ -193,6 +193,9 @@ export function Profile() {
               <Editable
                 k="Familia"
                 v={familiaTexto}
+                // El desplegable se abre en la familia que ya tenga elegida, no
+                // en «que se deduzca»: así no la borra sin querer al guardar.
+                current={player.family ?? ""}
                 field="familia"
                 edit={edit}
                 help="Es la familia que sale en tu ficha. Si la dejas sin elegir, se usa en la que más misiones hayas superado."
@@ -378,6 +381,7 @@ function SlotPreview({ slot, id, name }: { slot: Slot; id: string; name: string 
 function Editable({
   k,
   v,
+  current,
   field,
   edit,
   help,
@@ -391,6 +395,8 @@ function Editable({
 }: {
   k: string;
   v: string;
+  /** Valor con el que se abre el formulario, si no vale el que se muestra. */
+  current?: string;
   field: Field;
   edit: EditState;
   help: string;
@@ -411,7 +417,7 @@ function Editable({
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <dt className="shrink-0 text-accent">{k}</dt>
         <dd className="min-w-0 flex-1 break-words text-[var(--term-text)]">{v}</dd>
-        <button className="btn btn-ghost btn-sm shrink-0" onClick={() => onOpen(field, options ? "" : v)}>
+        <button className="btn btn-ghost btn-sm shrink-0" onClick={() => onOpen(field, current ?? v)}>
           ✎ <span className="sr-only">Cambiar {k}</span>
         </button>
       </div>

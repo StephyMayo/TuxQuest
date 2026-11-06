@@ -38,7 +38,7 @@ export function Wizard() {
               Tienes <strong className="text-accent">{player.coins} monedas</strong> para empezar. ¿Primera vez? Prueba «Primeros pasos» en Debian, nivel fácil.
             </p>
           </div>
-          <Link href="/jugar/partida?familia=debian&dificultad=facil&mision=navegacion" className="btn btn-primary shrink-0">
+          <Link href="/jugar/partida?familia=debian&dificultad=easy&mision=navigation" className="btn btn-primary shrink-0">
             ▶ Primera misión
           </Link>
         </div>
