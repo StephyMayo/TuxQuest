@@ -84,7 +84,6 @@ export function Chapter() {
         chapter.topic,
         result.score,
         Math.max(1, result.total),
-        result.score * COINS_PER_WIN,
       )
       .then((coins) => {
         setCoins(coins);

@@ -17,7 +17,7 @@ export function Coins({ value }: { value: number }) {
 }
 
 export function Header() {
-  const { player, loading, signOut, backend } = useAuth();
+  const { player, loading, authError, inventoryError, signOut, backend } = useAuth();
   const router = useRouter();
   const frame = player ? frameStyle(player.loadout.frame) : null;
 
@@ -78,6 +78,11 @@ export function Header() {
           )}
         </nav>
       </div>
+      {(authError || inventoryError) && (
+        <p role="alert" className="mx-auto max-w-6xl px-4 pb-2 text-sm text-bad">
+          {authError ?? inventoryError}
+        </p>
+      )}
     </header>
   );
 }

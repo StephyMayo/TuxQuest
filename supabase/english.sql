@@ -220,14 +220,18 @@ end;
 $fn$;
 
 -- finish_run valida dificultad y modo, que ahora van en inglés
+drop function if exists public.finish_run(text, text, text, text, int, int, int, text);
+drop function if exists public.finish_run(text, text, text, text, int, int, text);
+
 create or replace function public.finish_run(
   p_family text, p_difficulty text, p_mode text, p_topic text,
-  p_correct int, p_total int, p_coins int, p_boost text default null
+  p_correct int, p_total int, p_boost text default null
 )
 returns int language plpgsql security definer set search_path = public as $fn$
 declare
   v_coins int;
   v_payout int;
+  v_coins_per_correct int;
   v_used int;
 begin
   if auth.uid() is null then raise exception 'Sesion no iniciada'; end if;
@@ -236,7 +240,14 @@ begin
   if p_mode not in ('mission', 'story') then raise exception 'Modo no valido'; end if;
   if coalesce(p_topic, '') = '' then raise exception 'Tema no valido'; end if;
   if p_total <= 0 or p_total > 30 or p_correct < 0 or p_correct > p_total then raise exception 'Resultado no valido'; end if;
-  if p_coins < 0 or p_coins > p_correct * 20 then raise exception 'Monedas no validas'; end if;
+
+  v_coins_per_correct := case
+    when p_mode = 'story' then 4
+    when p_difficulty = 'easy' then 5
+    when p_difficulty = 'medium' then 10
+    else 20
+  end;
+  v_payout := p_correct * v_coins_per_correct;
 
   insert into family_progress as fp
     (user_id, family_id, difficulty, mode, topic, best_correct, best_total, completed)
@@ -249,8 +260,6 @@ begin
                         then excluded.best_total else fp.best_total end,
     completed    = fp.completed or excluded.completed,
     updated_at   = now();
-
-  v_payout := p_coins;
 
   if p_boost = 'boost_coins' then
     update inventory set qty = qty - 1, updated_at = now()
@@ -266,4 +275,4 @@ $fn$;
 
 grant execute on function public.equip_item(text, text) to authenticated;
 grant execute on function public.set_family(text) to authenticated;
-grant execute on function public.finish_run(text, text, text, text, int, int, int, text) to authenticated;
+grant execute on function public.finish_run(text, text, text, text, int, int, text) to authenticated;

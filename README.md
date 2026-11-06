@@ -31,14 +31,15 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 3. **Desactiva *Confirm email*** en **Authentication > Sign In / Providers > Email**. Es el paso que
    más se olvida y el que impide crear cuentas seguidas: mira [«No deja crear más
    cuentas»](#no-deja-crear-más-cuentas-el-límite-de-correos) justo debajo.
-4. Copia `.env.example` como `.env.local` y completa los datos de **Project Settings > API**:
+4. Copia `.env.example` como `.env.local` y reemplaza los valores vacíos con los datos de tu proyecto en **Project Settings > API**. La URL es única para cada proyecto, así que el repositorio no puede incluir una URL válida para todos:
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
    ```
    Supabase llama a esa clave *publishable key*; en los proyectos de antes se llamaba *anon key* y
    empieza por `eyJ...`. Si tu panel te da esa, puedes ponerla igual en
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY`: la app acepta los dos nombres.
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`: la app acepta los dos nombres. Nunca uses la clave `service_role`
+   en una variable `NEXT_PUBLIC_*`.
 5. Reinicia `npm run dev`. El aviso «modo demo» de la cabecera desaparece.
 
 En Vercel, agrega esas mismas dos variables en **Settings > Environment Variables**.
@@ -145,8 +146,10 @@ Así, cambiar de familia no pisa nada: cada una conserva lo suyo. La versión an
 guardaba todo en un único texto (`debian:facil:redes`), que además dejaba el modo
 historia sin familia y por eso sí se pisaba al cambiar.
 
-Solo escribe `finish_run()`, que valida familia, dificultad, modo, tema y monedas antes
-de tocar nada. El cliente no tiene permisos de `insert` ni `update` sobre la tabla.
+Solo escribe `finish_run()`, que valida familia, dificultad, modo y resultado, y calcula
+las monedas en la base de datos según el modo y la dificultad. El cliente no tiene permisos de
+`insert` ni `update` sobre la tabla. La puntuación de aciertos aún la informa el navegador;
+para un entorno competitivo habría que trasladar también la validación de respuestas al servidor.
 
 ## Reglas de dificultad (punto 5.3)
 
@@ -204,7 +207,7 @@ con la anterior.
 Las compras no se validan en el navegador: el precio, el desbloqueo y el descuento de
 monedas los resuelven las funciones `buy_item()`, `equip_item()` y `consume_boost()` de
 PostgreSQL, igual que ya se hacía con `spend_coins()`. El multiplicador del boost de
-monedas se aplica dentro de `finish_mission()`, que además descuenta la unidad usada.
+monedas se aplica dentro de `finish_run()`, que además descuenta la unidad usada.
 
 ## Guías de cada familia
 

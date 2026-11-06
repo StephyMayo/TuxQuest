@@ -62,6 +62,9 @@ on conflict (user_id, family_id, difficulty, mode, topic) do nothing;
 -- ---------------------------------------------------------------------
 -- Guardar una partida terminada, sea misión o capítulo de historia
 -- ---------------------------------------------------------------------
+drop function if exists public.finish_run(text, text, text, text, int, int, int, text);
+drop function if exists public.finish_run(text, text, text, text, int, int, text);
+
 create or replace function public.finish_run(
   p_family text,
   p_difficulty text,
@@ -69,13 +72,13 @@ create or replace function public.finish_run(
   p_topic text,
   p_correct int,
   p_total int,
-  p_coins int,
   p_boost text default null
 )
 returns int language plpgsql security definer set search_path = public as $fn$
 declare
   v_coins int;
   v_payout int;
+  v_coins_per_correct int;
   v_used int;
 begin
   if auth.uid() is null then raise exception 'Sesion no iniciada'; end if;
@@ -84,8 +87,15 @@ begin
   if p_mode not in ('mission', 'story') then raise exception 'Modo no valido'; end if;
   if coalesce(p_topic, '') = '' then raise exception 'Tema no valido'; end if;
   if p_total <= 0 or p_total > 30 or p_correct < 0 or p_correct > p_total then raise exception 'Resultado no valido'; end if;
-  -- Limite: como maximo 20 monedas por acierto (dificultad dificil)
-  if p_coins < 0 or p_coins > p_correct * 20 then raise exception 'Monedas no validas'; end if;
+
+  -- El cliente solo informa los aciertos; la tarifa y el pago los decide la base.
+  v_coins_per_correct := case
+    when p_mode = 'story' then 4
+    when p_difficulty = 'easy' then 5
+    when p_difficulty = 'medium' then 10
+    else 20
+  end;
+  v_payout := p_correct * v_coins_per_correct;
 
   insert into family_progress as fp
     (user_id, family_id, difficulty, mode, topic, best_correct, best_total, completed)
@@ -100,8 +110,6 @@ begin
     -- una vez superado, no se pierde por un intento peor
     completed    = fp.completed or excluded.completed,
     updated_at   = now();
-
-  v_payout := p_coins;
 
   -- El multiplicador se aplica aqui, no en el navegador: solo cuenta si el
   -- jugador tiene de verdad el boost, y se gasta al usarlo.
@@ -137,4 +145,4 @@ create policy "family_progress_read_own" on public.family_progress for select us
 
 -- Sin insert/update para el cliente: solo escribe finish_run()
 grant select on public.family_progress to authenticated;
-grant execute on function public.finish_run(text, text, text, text, int, int, int, text) to authenticated;
+grant execute on function public.finish_run(text, text, text, text, int, int, text) to authenticated;

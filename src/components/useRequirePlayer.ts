@@ -12,11 +12,11 @@ export function useRequirePlayer() {
   const params = useSearchParams();
 
   useEffect(() => {
-    if (!auth.loading && !auth.player) {
+    if (!auth.loading && !auth.authError && !auth.player) {
       const qs = params.toString();
       router.replace(`/login?next=${encodeURIComponent(path + (qs ? `?${qs}` : ""))}`);
     }
-  }, [auth.loading, auth.player, router, path, params]);
+  }, [auth.loading, auth.authError, auth.player, router, path, params]);
 
   return auth;
 }

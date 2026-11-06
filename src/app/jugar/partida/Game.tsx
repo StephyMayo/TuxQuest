@@ -133,7 +133,6 @@ export function Game() {
         mission.topic,
         correct,
         results.length,
-        correct * rules.coins,
         doubled ? "boost_coins" : null,
       )
       .then((coins) => {

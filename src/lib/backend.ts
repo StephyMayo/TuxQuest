@@ -1,7 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { MISSION_PASS_RATIO, STARTING_COINS } from "@/data/catalog";
+import { DIFFICULTIES, MISSION_PASS_RATIO, STARTING_COINS } from "@/data/catalog";
 import { DEFAULT_LOADOUT, itemById } from "@/data/shop";
 import { QUESTION_BANK } from "@/data/questions";
+import { COINS_PER_WIN } from "@/data/story";
 import type { ActiveBoost, Inventory, Loadout, Question, Slot } from "@/data/types";
 import type { MissionProgress, ProgressRow, RunMode } from "./missions";
 import { sha256Hex } from "./sha256";
@@ -36,7 +37,6 @@ export interface Backend {
     topic: string,
     correct: number,
     total: number,
-    coins: number,
     boost?: ActiveBoost | null,
   ): Promise<number>;
   // --- Tienda y perfil ---
@@ -177,18 +177,21 @@ class SupabaseBackend implements Backend {
   private async profile(userId: string, email: string): Promise<Player | null> {
     const { data, error } = await this.db.from("profiles").select("id, username, coins, avatar, title, frame, family_id").eq("id", userId).single();
     if (!error && data) return toPlayer(data as ProfileRow, email);
+    if (error && error.code !== "PGRST116") throw error;
 
     // Sin fila en profiles. Pasa con las cuentas creadas desde el panel de
     // Supabase o con la API de administración, que no pasan por el
     // formulario. ensure_profile() crea el perfil que falte y lo devuelve;
-    // si la base aún no tiene esa función, se queda como estaba.
+    // si falta la función o falla la consulta, el error se propaga al usuario.
     const { data: creado, error: rpcError } = await this.db.rpc("ensure_profile");
-    if (rpcError || !creado) return null;
+    if (rpcError) throw rpcError;
+    if (!creado) throw new Error("No se pudo crear el perfil del jugador.");
     return toPlayer(creado as ProfileRow, email);
   }
 
   async getPlayer() {
-    const { data } = await this.db.auth.getSession();
+    const { data, error } = await this.db.auth.getSession();
+    if (error) throw error;
     const user = data.session?.user;
     return user ? this.profile(user.id, user.email ?? "") : null;
   }
@@ -249,7 +252,6 @@ class SupabaseBackend implements Backend {
     topic: string,
     correct: number,
     total: number,
-    coins: number,
     boost: ActiveBoost | null = null,
   ) {
     const { data, error } = await this.db.rpc("finish_run", {
@@ -259,7 +261,6 @@ class SupabaseBackend implements Backend {
       p_topic: topic,
       p_correct: correct,
       p_total: total,
-      p_coins: coins,
       p_boost: boost,
     });
     if (error) throw error;
@@ -491,10 +492,16 @@ class DemoBackend implements Backend {
     topic: string,
     correct: number,
     total: number,
-    coins: number,
     boost: ActiveBoost | null = null,
   ) {
     const u = this.mustCurrent();
+    if (total <= 0 || total > 30 || correct < 0 || correct > total) {
+      throw new Error("Resultado no válido.");
+    }
+    const coinsPerCorrect = mode === "story"
+      ? COINS_PER_WIN
+      : DIFFICULTIES.find((candidate) => candidate.id === difficulty)?.coins;
+    if (coinsPerCorrect === undefined) throw new Error("Dificultad no válida.");
     const all = await this.getProgress();
     const i = all.findIndex((r) => r.family === family && r.difficulty === difficulty && r.mode === mode && r.topic === topic);
     const prev = i >= 0 ? all[i] : null;
@@ -511,7 +518,7 @@ class DemoBackend implements Backend {
     if (i >= 0) all[i] = fila;
     else all.push(fila);
     save(progressKey(u.id), all);
-    let payout = coins;
+    let payout = correct * coinsPerCorrect;
     if (boost === "boost_coins" && (u.inventory[boost] ?? 0) > 0) {
       u.inventory[boost] -= 1;
       payout *= 2;
