@@ -25,25 +25,46 @@ se guardan solo en el navegador (`localStorage`). Sirve para probar y presentar 
 1. Crea un proyecto en https://supabase.com (plan gratuito).
 2. En **SQL Editor**, ejecuta en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
    `supabase/shop.sql`, `supabase/avatares.sql`, `supabase/avatares-2.sql`,
-   `supabase/perfil.sql`, `supabase/progreso.sql` y `supabase/claves.sql`. Los seis últimos añaden la tienda, los avatares y la edición
-   del perfil; todos se pueden volver a ejecutar sin romper nada.
-3. En **Authentication > Sign In / Providers > Email**, desactiva *Confirm email* mientras desarrollan
-   (si lo dejas activo, el jugador debe confirmar su correo antes de iniciar sesión; la app ya muestra ese aviso).
-
-   > **«email rate limit exceeded» al registrarse.** El servidor de correo que Supabase presta gratis
-   > solo envía unos pocos mensajes por hora para todo el proyecto, y ese límite se comparte entre
-   > todas las cuentas. Si varias personas se registran seguidas, las siguientes reciben ese error.
-   > Con *Confirm email* desactivado no se envía ningún correo y el problema desaparece. Si necesitas
-   > confirmación real, configura un SMTP propio en **Authentication > Emails > SMTP Settings**
-   > (Resend o Brevo tienen planes gratuitos suficientes).
+   `supabase/perfil.sql`, `supabase/progreso.sql`, `supabase/claves.sql` y `supabase/registro.sql`.
+   Los siete últimos añaden la tienda, los avatares, la edición del perfil y el registro a prueba de
+   fallos; todos se pueden volver a ejecutar sin romper nada.
+3. **Desactiva *Confirm email*** en **Authentication > Sign In / Providers > Email**. Es el paso que
+   más se olvida y el que impide crear cuentas seguidas: mira [«No deja crear más
+   cuentas»](#no-deja-crear-más-cuentas-el-límite-de-correos) justo debajo.
 4. Copia `.env.example` como `.env.local` y completa los datos de **Project Settings > API**:
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
    ```
+   Supabase llama a esa clave *publishable key*; en los proyectos de antes se llamaba *anon key* y
+   empieza por `eyJ...`. Si tu panel te da esa, puedes ponerla igual en
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`: la app acepta los dos nombres.
 5. Reinicia `npm run dev`. El aviso «modo demo» de la cabecera desaparece.
 
 En Vercel, agrega esas mismas dos variables en **Settings > Environment Variables**.
+
+### No deja crear más cuentas: el límite de correos
+
+Si al registrar al cuarto o quinto jugador el formulario responde que no se pueden enviar más correos,
+**no es un tope de usuarios**: Supabase no limita cuántas cuentas puedes tener. Lo que se agota es el
+servidor de correo que Supabase presta gratis, que solo manda unos pocos mensajes por hora **para todo
+el proyecto**. Con *Confirm email* activado, cada registro gasta uno de esos mensajes, así que a los
+pocos registros seguidos los siguientes fallan con «email rate limit exceeded».
+
+Tres formas de resolverlo, de la más simple a la más seria:
+
+1. **Desactivar *Confirm email*** en **Authentication > Sign In / Providers > Email**. Sin correo de
+   confirmación no se envía nada, no hay límite y el jugador entra directo al registrarse. Es lo
+   razonable para el aula y para las demostraciones.
+2. **Crear las cuentas desde el panel**, en **Authentication > Users > Add user**, marcando
+   *Auto Confirm User*. No gasta correos y sirve para dar de alta a toda una clase. El perfil del
+   jugador (nombre, monedas, avatar) lo crea la propia app la primera vez que entra, gracias a
+   `ensure_profile()` de `supabase/registro.sql`.
+3. **Configurar un SMTP propio** en **Authentication > Emails > SMTP Settings** (Resend o Brevo tienen
+   planes gratuitos de sobra). Es lo que hay que hacer si quieres confirmación de correo de verdad en
+   producción.
+
+El tope por hora se reinicia solo, así que si ya te pasó, espera un rato o usa la opción 2.
 
 ## Scripts
 
@@ -79,7 +100,7 @@ src/
     tienda              Tienda de boosts y cosméticos (RF-13)
     perfil              Perfil del jugador y personalización (RF-14)
 supabase/
-  schema.sql            Tablas, RLS y funciones (spend_coins, finish_mission)
+  schema.sql            Tablas, RLS y funciones base (spend_coins, username_taken)
   seed.sql              Familias, categorías y preguntas (generado)
   shop.sql              Tienda: shop_items, inventory, buy_item, equip_item, consume_boost
   avatares.sql          Avatares ilustrados del catálogo
@@ -87,6 +108,7 @@ supabase/
   perfil.sql            Familia elegida en el perfil y set_family()
   progreso.sql          Tabla family_progress y finish_run()
   claves.sql            profiles.family_id con clave foránea
+  registro.sql          Registro a prueba de fallos: free_username() y ensure_profile()
   english.sql           Solo para bases anteriores: pasa los datos a inglés
 ```
 

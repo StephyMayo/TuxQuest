@@ -113,7 +113,12 @@ const AUTH_MESSAGES: Record<string, string> = {
 const AUTH_PATTERNS: [RegExp, string][] = [
   [
     /email rate limit|over_email_send_rate_limit|rate limit exceeded/i,
-    "Se alcanzó el límite de correos de registro. Espera unos minutos e inténtalo de nuevo, o pide al administrador que configure el envío de correos.",
+    "Supabase no deja enviar más correos de confirmación por ahora (su servidor gratuito solo manda unos pocos por hora, y el límite es de todo el proyecto, no de esta cuenta). " +
+      "Espera unos minutos, o dile al administrador que desactive «Confirm email» en Authentication > Sign In / Providers > Email: así el registro no envía ningún correo y no hay límite.",
+  ],
+  [
+    /database error (saving new user|granting user)/i,
+    "No se pudo crear el perfil del jugador. Pide al administrador que ejecute supabase/registro.sql y vuelve a intentarlo.",
   ],
   [/for security purposes|only request this after/i, "Espera unos segundos antes de volver a intentarlo."],
   [/password should be at least/i, "La contraseña debe tener al menos 6 caracteres."],
@@ -155,15 +160,31 @@ const loadoutOf = (r: ProfileRow): Loadout => ({
   frame: r.frame ?? DEFAULT_LOADOUT.frame,
 });
 
+/** Fila de profiles -> jugador. El correo lo pone Auth, no esta tabla. */
+const toPlayer = (r: ProfileRow, email: string): Player => ({
+  id: r.id,
+  username: r.username,
+  coins: r.coins,
+  email,
+  family: r.family_id,
+  loadout: loadoutOf(r),
+});
+
 class SupabaseBackend implements Backend {
   mode = "supabase" as const;
   constructor(private db: SupabaseClient) {}
 
   private async profile(userId: string, email: string): Promise<Player | null> {
     const { data, error } = await this.db.from("profiles").select("id, username, coins, avatar, title, frame, family_id").eq("id", userId).single();
-    if (error || !data) return null;
-    const row = data as ProfileRow;
-    return { id: row.id, username: row.username, coins: row.coins, email, family: row.family_id, loadout: loadoutOf(row) };
+    if (!error && data) return toPlayer(data as ProfileRow, email);
+
+    // Sin fila en profiles. Pasa con las cuentas creadas desde el panel de
+    // Supabase o con la API de administración, que no pasan por el
+    // formulario. ensure_profile() crea el perfil que falte y lo devuelve;
+    // si la base aún no tiene esa función, se queda como estaba.
+    const { data: creado, error: rpcError } = await this.db.rpc("ensure_profile");
+    if (rpcError || !creado) return null;
+    return toPlayer(creado as ProfileRow, email);
   }
 
   async getPlayer() {
@@ -185,7 +206,7 @@ class SupabaseBackend implements Backend {
     const { data, error } = await this.db.auth.signInWithPassword({ email, password });
     if (error) throw new AuthError(authMessage(error.message));
     const p = await this.profile(data.user.id, email);
-    if (!p) throw new AuthError("No se encontró el perfil del jugador.");
+    if (!p) throw new AuthError("No se encontró el perfil del jugador. Pide al administrador que ejecute supabase/registro.sql.");
     return p;
   }
 
