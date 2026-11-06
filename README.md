@@ -1,6 +1,6 @@
 # TuxQuest
 
-Juego web para aprender comandos Linux por familias de distribuciones (Debian, Arch, Red Hat y SUSE).
+Juego cocodrilo web para aprender comandos Linux por familias de distribuciones (Debian, Arch, Red Hat y SUSE).
 Proyecto de la Tarea 05 · SENATI · Ingeniería de Software con IA.
 
 **Primera entrega (RF-01 a RF-09):** cuentas de usuario, elección de familia, categoría y dificultad,
