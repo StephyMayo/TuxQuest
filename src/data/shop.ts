@@ -1,12 +1,6 @@
-import type { Inventory, ItemKind, Loadout, ShopItem, Slot } from "./types.ts";
+import type { Inventory, ItemKind, Loadout, ShopItem } from "./types.ts";
 
-/**
- * Catálogo de la tienda. Los precios también viven en la base de datos
- * (tabla shop_items) porque el servidor nunca confía en el precio que manda
- * el navegador: aquí solo están para pintar la tienda.
- */
 export const SHOP_ITEMS: ShopItem[] = [
-  // --- Boosts: se gastan al usarlos durante una misión -----------------
   {
     id: "boost_coins",
     kind: "boost",
@@ -40,7 +34,6 @@ export const SHOP_ITEMS: ShopItem[] = [
     stackable: true,
   },
 
-  // --- Avatares --------------------------------------------------------
   { id: "tux", kind: "avatar", name: "Tux clásico", description: "El pingüino de siempre. Lo tienes desde el inicio.", price: 0 },
   { id: "tux_shades", kind: "avatar", name: "Tux hacker", description: "Con gafas de sol. Porque la terminal es oscura.", price: 60 },
   { id: "tux_ninja", kind: "avatar", name: "Tux ninja", description: "Se mueve entre directorios sin hacer ruido.", price: 120, requires: 3 },
@@ -219,7 +212,6 @@ export const SHOP_ITEMS: ShopItem[] = [
     image: { src: "/avatares/av_specter.webp", w: 223, h: 240 },
   },
 
-  // --- Títulos ---------------------------------------------------------
   { id: "title_rookie", kind: "title", name: "Novato", description: "Todos empezamos escribiendo ls.", price: 0 },
   { id: "title_shell", kind: "title", name: "Aprendiz de shell", description: "Ya no le temes al cursor parpadeante.", price: 40 },
   { id: "title_script", kind: "title", name: "Script Kiddie", description: "Copias comandos, pero con estilo.", price: 90, requires: 3 },
@@ -227,7 +219,6 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "title_kernel", kind: "title", name: "Maestro del Kernel", description: "Compilas por diversión.", price: 300, requires: 9 },
   { id: "title_root", kind: "title", name: "root", description: "Con gran poder viene un gran rm -rf. Úsalo con cuidado.", price: 500, requires: 12 },
 
-  // --- Marcos del perfil ----------------------------------------------
   { id: "frame_basic", kind: "frame", name: "Marco estándar", description: "Sobrio y funcional, como Debian.", price: 0 },
   { id: "frame_bronze", kind: "frame", name: "Marco de bronce", description: "Tu primera medalla.", price: 70 },
   { id: "frame_silver", kind: "frame", name: "Marco de plata", description: "Brilla sin exagerar.", price: 150, requires: 4 },
@@ -235,10 +226,8 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "frame_neon", kind: "frame", name: "Marco neón", description: "Estética de terminal a las 3 de la madrugada.", price: 260, requires: 6 },
 ];
 
-/** Lo que trae puesto un jugador nuevo: lo gratuito. */
 export const DEFAULT_LOADOUT: Loadout = { avatar: "tux", title: "title_rookie", frame: "frame_basic" };
 
-/** Items gratuitos: se consideran siempre en propiedad, no hace falta comprarlos. */
 export const FREE_ITEMS = SHOP_ITEMS.filter((i) => i.price === 0).map((i) => i.id);
 
 export const KIND_LABEL: Record<ItemKind, string> = {
@@ -259,15 +248,11 @@ export const SHOP_ORDER: ItemKind[] = ["boost", "avatar", "title", "frame"];
 
 export const itemById = (id: string) => SHOP_ITEMS.find((i) => i.id === id);
 export const itemsOfKind = (kind: ItemKind) => SHOP_ITEMS.filter((i) => i.kind === kind);
-export const isSlot = (kind: ItemKind): kind is Slot => kind !== "boost";
 
-/** ¿El jugador ya tiene este item? Los gratuitos cuentan como comprados. */
 export const owns = (inv: Inventory, id: string) => FREE_ITEMS.includes(id) || (inv[id] ?? 0) > 0;
 
-/** Texto corto del título equipado ("" si lleva el de por defecto). */
 export const titleText = (id: string) => itemById(id)?.name ?? "";
 
-/** Colores de cada marco: [borde, resplandor]. */
 export const FRAME_STYLE: Record<string, { border: string; glow: string }> = {
   frame_basic: { border: "#06030f", glow: "transparent" },
   frame_bronze: { border: "#c87f34", glow: "#c87f3455" },

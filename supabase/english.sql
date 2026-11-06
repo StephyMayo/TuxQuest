@@ -1,23 +1,3 @@
--- =====================================================================
--- TuxQuest · Pasar la base de datos a inglés
--- Ejecutar DESPUÉS de claves.sql, sobre una base que ya tenga datos.
--- Supabase > SQL Editor > New query > pegar y Run.
--- Es idempotente: puedes volver a ejecutarlo sin romper nada.
---
--- Qué hace:
---   1. Renombra las columnas que estaban en castellano
---   2. Traduce los valores guardados (dificultad, tema, modo, tipo)
---   3. Renombra los identificadores de los objetos de la tienda
---   4. Rehace los check y las funciones que llevaban la lista escrita
---
--- Los textos que ve el jugador -nombres y descripciones de los objetos,
--- enunciados de las preguntas- siguen en castellano: eso es el idioma
--- del producto, no código mezclado.
--- =====================================================================
-
--- ---------------------------------------------------------------------
--- 1. Columnas
--- ---------------------------------------------------------------------
 do $mig$
 declare
   v_col text;
@@ -33,12 +13,6 @@ begin
 end
 $mig$;
 
--- ---------------------------------------------------------------------
--- 2. Valores guardados
---
--- Los check viejos nombran los valores en castellano, así que hay que
--- quitarlos antes de traducir y volver a ponerlos después.
--- ---------------------------------------------------------------------
 alter table public.questions       drop constraint if exists questions_difficulty_check;
 alter table public.family_progress drop constraint if exists family_progress_difficulty_check;
 alter table public.family_progress drop constraint if exists family_progress_mode_check;
@@ -91,7 +65,6 @@ update public.shop_items set kind = case kind
   when 'marco' then 'frame'
   else kind end;
 
-
 alter table public.questions
   add constraint questions_difficulty_check check (difficulty in ('easy', 'medium', 'hard'));
 alter table public.family_progress
@@ -101,13 +74,6 @@ alter table public.family_progress
 alter table public.shop_items
   add constraint shop_items_kind_check check (kind in ('avatar', 'title', 'frame', 'boost'));
 
--- ---------------------------------------------------------------------
--- 3. Identificadores de los objetos
---
--- inventory.item_id apunta a shop_items(id), así que hay que soltar la
--- clave foránea mientras se renombran y volver a ponerla al final.
--- profiles guarda el objeto equipado en avatar, title y frame.
--- ---------------------------------------------------------------------
 create table if not exists public._id_map (old text primary key, new text not null);
 truncate public._id_map;
 
@@ -149,7 +115,6 @@ insert into public._id_map (old, new) values
   ('av_demonio', 'av_demon'),
   ('av_espectro', 'av_specter');
 
-
 alter table public.inventory drop constraint if exists inventory_item_id_fkey;
 
 update public.shop_items s set id      = m.new from public._id_map m where s.id      = m.old;
@@ -163,11 +128,9 @@ alter table public.inventory
 
 drop table public._id_map;
 
--- Lo que viene equipado de fábrica también cambia de nombre
 alter table public.profiles alter column title set default 'title_rookie';
 alter table public.profiles alter column frame set default 'frame_basic';
 
--- La familia del perfil apunta a families en vez de repetir la lista
 do $fk$
 begin
   if not exists (select 1 from pg_constraint where conname = 'profiles_family_fkey') then
@@ -178,9 +141,6 @@ begin
 end
 $fk$;
 
--- ---------------------------------------------------------------------
--- 4. Funciones que llevaban los valores escritos dentro
--- ---------------------------------------------------------------------
 create or replace function public.equip_item(p_slot text, p_item_id text)
 returns json language plpgsql security definer set search_path = public as $fn$
 declare v_kind text;
@@ -209,7 +169,7 @@ create or replace function public.set_family(p_family text)
 returns text language plpgsql security definer set search_path = public as $fn$
 begin
   if auth.uid() is null then raise exception 'Sesion no iniciada'; end if;
-  -- null vuelve a dejar que se deduzca de las misiones superadas
+
   if p_family is not null and not exists (select 1 from families where id = p_family) then
     raise exception 'Familia no valida';
   end if;
@@ -219,7 +179,6 @@ begin
 end;
 $fn$;
 
--- finish_run valida dificultad y modo, que ahora van en inglés
 create or replace function public.finish_run(
   p_family text, p_difficulty text, p_mode text, p_topic text,
   p_correct int, p_total int, p_coins int, p_boost text default null

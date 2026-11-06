@@ -2,23 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BOSSES, ENEMIES, type BossId, type EnemyId } from "@/data/story";
-import { OWN_SHARE, SPAWN, SPEED, commandsFor, shuffled } from "@/lib/story";
+import { OWN_SHARE, SPAWN, SPEED, commandsFor } from "@/lib/story";
+import { shuffled } from "@/lib/shuffle";
 import { BossSprite, EnemySprite } from "@/components/story/Enemies";
 import { PixelHeart, PixelTux } from "@/components/Pixel";
 import type { GameProps } from "./types";
 
-/**
- * Defensa de la terminal: los enemigos avanzan hacia Tux con un comando
- * encima y se derriban escribiéndolo. Si uno llega, cuesta una vida.
- *
- * Es el único minijuego con prisa de verdad: el resto deja pensar.
- */
 interface Live {
   key: number;
   kind: EnemyId | null;
   boss: BossId | null;
   cmd: string;
-  /** 0 = encima de Tux, 100 = acaba de aparecer. */
+
   x: number;
   lane: number;
   speed: number;
@@ -51,23 +46,14 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
   const doneRef = useRef(false);
   const killsRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  /**
-   * La lista de enemigos de verdad. El estado es solo para pintar.
-   *
-   * Antes el bucle calculaba el avance dentro del updater de setEnemies y
-   * ahí mismo quitaba vidas. Un updater tiene que ser una función pura:
-   * React lo llama dos veces en desarrollo (modo estricto), así que cada
-   * enemigo que se colaba restaba dos vidas en vez de una.
-   */
+
   const enemiesRef = useRef<Live[]>([]);
 
-  /** Deja la lista en el ref y la manda a pintar. */
   const publicar = useCallback((lista: Live[]) => {
     enemiesRef.current = lista;
     setEnemies(lista);
   }, []);
 
-  /** Comando para un enemigo nuevo: casi siempre del capítulo, a veces de repaso. */
   const nextCmd = useCallback(() => {
     const usaPropio = pool.own.length > 0 && (pool.review.length === 0 || Math.random() < OWN_SHARE);
     const lista = usaPropio ? pool.own : pool.review;
@@ -77,14 +63,10 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
   const acabar = useCallback(() => {
     if (doneRef.current) return;
     doneRef.current = true;
-    // El capítulo se puntúa sobre el número de enemigos. Los trozos del
-    // paquete roto y el jefe son derribos de más, así que se recorta: el
-    // servidor rechaza cualquier resultado con más aciertos que total
-    // ("Resultado no valido") y el capítulo se quedaba sin guardar.
+
     onFinish(Math.min(killsRef.current, chapter.rounds), chapter.rounds);
   }, [onFinish, chapter.rounds]);
 
-  // --- bucle del juego ---
   useEffect(() => {
     let raf = 0;
     let last = performance.now();
@@ -108,7 +90,7 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
       const vivos: Live[] = [];
       for (const e of lista) {
         const age = e.age + dt;
-        // la fuga de memoria va cada vez más rápido
+
         const acel = e.kind === "fuga" ? 1 + Math.min(1.4, age / 7) : 1;
         const x = e.x - e.speed * acel * dt;
         if (x <= 0) {
@@ -117,7 +99,7 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
         }
         vivos.push({ ...e, x, age });
       }
-      // los huérfanos protegen al que tengan más cerca
+
       for (const v of vivos) v.shielded = false;
       for (const g of vivos.filter((e) => e.kind === "huerfano")) {
         let mejor: Live | null = null;
@@ -144,7 +126,6 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
     return () => cancelAnimationFrame(raf);
   }, [chapter, rules, nextCmd, acabar, publicar]);
 
-  // --- jefe al final, y cierre del capítulo ---
   useEffect(() => {
     if (doneRef.current) return;
     if (spawnedRef.current < chapter.rounds || enemies.length > 0) return;
@@ -182,7 +163,6 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
     inputRef.current?.focus();
   }, []);
 
-  /** El enemigo al que apunta lo escrito: el más cercano a Tux que encaje. */
   const target = useMemo(() => {
     if (!typed) return null;
     const t = typed.toLowerCase();
@@ -205,8 +185,6 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
       return;
     }
 
-    // Al zombi y al jefe hay que darles varias veces: este golpe solo los
-    // remata si ya les quedaba un toque.
     const muere = golpeado.hitsLeft <= 1;
     const out: Live[] = [];
     for (const e of enemiesRef.current) {
@@ -218,7 +196,7 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
         out.push({ ...e, hitsLeft: e.hitsLeft - 1, cmd: nextCmd() });
         continue;
       }
-      // el paquete roto se parte en dos trozos
+
       if (e.kind === "roto" && !e.shard) {
         for (const d of [-1, 1]) {
           out.push({
@@ -236,10 +214,6 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
     }
     publicar(out);
 
-    // Solo cuenta como derribo el golpe que lo remata. Antes sumaba uno por
-    // cada comando acertado, así que un zombi valía dos y el jefe seis: el
-    // capítulo acababa con más derribos que enemigos y al guardarlo el
-    // servidor lo rechazaba, de modo que no se marcaba como superado.
     if (muere) {
       killsRef.current += 1;
       setKills(killsRef.current);
@@ -260,13 +234,11 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
         <span className="chip font-pixel text-[10px]">{Math.max(0, chapter.rounds - kills)} quedan</span>
         {combo >= 3 && <span className="chip font-pixel text-[10px] text-[#ff9a3c]">COMBO x{combo}</span>}
       </div>
-
       <div className="card crt relative mt-3 h-[340px] overflow-hidden sm:h-[400px]">
         <div className="absolute bottom-3 left-3 z-10">
           <PixelTux size={54} bob />
         </div>
         <div className="pointer-events-none absolute inset-y-0 left-[58px] z-0 w-[3px] bg-bad/40" aria-hidden="true" />
-
         {enemies.map((e) => {
           const esObjetivo = target?.key === e.key;
           const hecho = esObjetivo ? e.cmd.slice(0, typed.length) : "";
@@ -299,7 +271,6 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
           </p>
         )}
       </div>
-
       <form onSubmit={submit} className="mt-4 flex items-center gap-3">
         <span className="font-crt text-xl text-[var(--term-prompt)]">$</span>
         <label htmlFor="cmd" className="sr-only">
@@ -324,7 +295,6 @@ export function Defensa({ chapter, family, rules, questions, onFinish }: GamePro
   );
 }
 
-/** Crea un enemigo en un carril libre. */
 function make(key: number, kind: EnemyId, cmd: string, dif: "easy" | "medium" | "hard", actuales: Live[]): Live {
   const usados = new Set(actuales.filter((e) => e.x > 72).map((e) => e.lane));
   const libres = [0, 1, 2, 3].filter((l) => !usados.has(l));

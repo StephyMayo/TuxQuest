@@ -3,19 +3,12 @@
 import { useMemo, useRef, useState } from "react";
 import { ACCIONES, SERVICIOS, type AccionServicio } from "@/data/minijuegos";
 import { BOSSES } from "@/data/story";
-import { shuffled } from "@/lib/story";
+import { shuffled } from "@/lib/shuffle";
 import { BossSprite } from "@/components/story/Enemies";
 import type { GameProps } from "./types";
 
 const COLOR: Record<string, string> = { activo: "text-ok", parado: "text-muted", fallido: "text-bad" };
 
-/**
- * Tablero de servicios: llevar cada uno de su estado actual al que se pide,
- * eligiendo la acción de systemctl correcta.
- *
- * Lo que se practica es la diferencia entre start, restart, enable y status,
- * que es donde se equivoca todo el mundo al empezar con systemd.
- */
 export function Tablero({ chapter, onFinish }: GameProps) {
   const rondas = useMemo(() => shuffled(SERVICIOS).slice(0, Math.min(chapter.rounds, SERVICIOS.length)), [chapter.rounds]);
   const [idx, setIdx] = useState(0);
@@ -52,7 +45,6 @@ export function Tablero({ chapter, onFinish }: GameProps) {
           <div key={i} className={`h-3 flex-1 border-2 border-ink ${i < idx ? "bg-ok" : i === idx ? "bg-accent" : "bg-bg-2"}`} />
         ))}
       </div>
-
       {chapter.boss && esUltima && (
         <div className="card-flat mt-4 flex items-center gap-3 p-3">
           <BossSprite id={chapter.boss} size={44} />
@@ -62,7 +54,6 @@ export function Tablero({ chapter, onFinish }: GameProps) {
           </div>
         </div>
       )}
-
       <section className={`card mt-4 p-5 sm:p-6 ${elegida && !bien ? "shake" : ""}`}>
         <div className="card-flat flex flex-wrap items-center justify-between gap-3 p-4">
           <span className="font-crt text-2xl text-[var(--term-text)]">{r.name}.service</span>
@@ -70,10 +61,8 @@ export function Tablero({ chapter, onFinish }: GameProps) {
             {r.from === "activo" ? "● activo" : r.from === "parado" ? "○ parado" : "✖ fallido"}
           </span>
         </div>
-
         <h2 className="mt-5 text-2xl font-semibold leading-snug">Hay que {r.goal}.</h2>
         <p className="mt-1 text-muted">¿Qué acción de systemctl usarías?</p>
-
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {(Object.keys(ACCIONES) as AccionServicio[]).map((a) => {
             const buena = elegida && a === r.answer;
@@ -94,7 +83,6 @@ export function Tablero({ chapter, onFinish }: GameProps) {
             );
           })}
         </div>
-
         <div aria-live="assertive">
           {elegida && (
             <div
@@ -110,7 +98,6 @@ export function Tablero({ chapter, onFinish }: GameProps) {
           )}
         </div>
       </section>
-
       <p className="mt-3 text-sm text-muted">
         Servicio {idx + 1} de {rondas.length} · {score} aciertos
       </p>

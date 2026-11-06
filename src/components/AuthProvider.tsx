@@ -8,7 +8,7 @@ interface AuthState {
   backend: Backend;
   player: Player | null;
   loading: boolean;
-  /** Cuántas unidades tiene de cada objeto. Vacío mientras carga o sin sesión. */
+
   inventory: Inventory;
   setPlayer: (p: Player | null) => void;
   setCoins: (coins: number) => void;
@@ -33,8 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, [backend]);
 
-  // Se carga el inventario al entrar. Al salir lo vacía signOut(), así que
-  // aquí no hace falta tocarlo cuando no hay jugador.
   useEffect(() => {
     if (!player) return;
     let cancelled = false;

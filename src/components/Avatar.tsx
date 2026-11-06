@@ -2,17 +2,6 @@ import Image from "next/image";
 import { itemById } from "@/data/shop";
 import { PixelAvatar } from "./Pixel";
 
-/**
- * Avatar del jugador. Los de la familia Tux son sprites de píxeles y los
- * demás, imágenes.
- *
- * Con `size` se dibuja dentro de una caja cuadrada de ese lado, para que
- * todos ocupen lo mismo en la interfaz. Con `stretch` llena el alto del
- * contenedor sin deformarse, que es como se usa en la ficha del perfil.
- *
- * Las imágenes van sin optimizar a propósito: son pixel art y el reescalado
- * automático las emborrona.
- */
 export function Avatar({
   id,
   size,
@@ -22,7 +11,7 @@ export function Avatar({
   title,
 }: {
   id: string;
-  /** Lado de la caja cuadrada. Se ignora si `stretch` está puesto. */
+
   size?: number;
   stretch?: boolean;
   className?: string;
@@ -33,7 +22,6 @@ export function Avatar({
   const fit = "h-full max-h-full w-auto max-w-full object-contain";
 
   if (!img) {
-    // El SVG del sprite ya mantiene la proporción al escalar.
     return (
       <PixelAvatar
         id={id}

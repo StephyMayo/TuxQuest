@@ -55,7 +55,6 @@ export function MissionList() {
       <Link href="/jugar" className="btn btn-ghost btn-sm">
         ◀ Cambiar selección
       </Link>
-
       <div className="card mt-6 flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
         <FamilyBadge id={family!.id} name={family!.name} color={family!.color} size={56} />
         <div className="flex-1">
@@ -85,10 +84,8 @@ export function MissionList() {
       <p className="mt-4 text-muted">
         Cada misión tiene hasta {MISSION_SIZE} retos. Supérala acertando al menos el {MISSION_PASS_RATIO * 100}%. Consigue 3 estrellas acertando todo.
       </p>
-
       {error && <p className="mt-6 text-bad">{error}</p>}
       {!missions && !error && <p className="mt-6 font-game text-xl text-muted">Cargando misiones…</p>}
-
       <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {missions?.map((m, i) => {
           const p = avance(m.topic);

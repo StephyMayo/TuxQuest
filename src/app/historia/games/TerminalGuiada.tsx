@@ -7,16 +7,9 @@ import { Terminal, type TerminalHandle } from "@/components/Terminal";
 import { PixelTux } from "@/components/Pixel";
 import type { GameProps } from "./types";
 
-/**
- * Terminal guiada: la shell simulada de verdad, con una lista de objetivos
- * que se van marcando solos según lo que haga el jugador.
- *
- * Aquí no se pierde: se puede trastear todo lo que haga falta. Es el
- * minijuego de los capítulos en los que lo que toca es perder el miedo.
- */
 export function TerminalGuiada({ chapter, family, onFinish }: GameProps) {
   const goals = useMemo<Goal[]>(() => chapter.goals ?? [], [chapter.goals]);
-  // La distribución de referencia de la familia es la que da el prompt.
+
   const shell = useMemo(() => {
     const d = { debian: "debian", arch: "archlinux", redhat: "fedora", suse: "tumbleweed" }[family.id];
     return new Shell(d, d, family.id, family.name, "~");
@@ -26,11 +19,10 @@ export function TerminalGuiada({ chapter, family, onFinish }: GameProps) {
   const termRef = useRef<TerminalHandle>(null);
   const doneRef = useRef(false);
 
-  /** Mira la shell y marca los objetivos que ya estén cumplidos. */
   const revisar = useCallback(() => {
     setDone((prev) =>
       goals.map((g, i) => {
-        if (prev[i]) return true; // lo cumplido no se descumple
+        if (prev[i]) return true;
         if (g.kind === "ran") return shell.hasRun(g.prefix);
         if (g.kind === "cwd") return shell.here === g.path;
         if (g.kind === "exists") return shell.peek(g.path) !== null;
@@ -64,7 +56,6 @@ export function TerminalGuiada({ chapter, family, onFinish }: GameProps) {
         >
           <span style={{ width: `${(hechos / Math.max(1, goals.length)) * 100}%` }} />
         </div>
-
         <ol className="mt-5 space-y-3">
           {goals.map((g, i) => (
             <li key={i} className={`flex items-start gap-3 ${done[i] ? "text-ok" : "text-muted"}`}>
@@ -79,25 +70,21 @@ export function TerminalGuiada({ chapter, family, onFinish }: GameProps) {
             </li>
           ))}
         </ol>
-
         {hechos === goals.length && goals.length > 0 && (
           <p className="pop mt-5 flex items-center gap-2 font-game text-xl text-accent">
             <PixelTux size={28} bob /> Todo hecho.
           </p>
         )}
-
         <p className="mt-6 text-sm text-muted">
           Aquí no se pierde nada: prueba lo que quieras. Si te atascas, <code className="font-crt text-lg">ls</code> y{" "}
           <code className="font-crt text-lg">pwd</code> casi siempre son el principio.
         </p>
       </section>
-
       <section aria-label="Terminal">
         <Terminal
           ref={termRef}
           shell={shell}
           onSubmit={() => {
-            // Se revisa en el siguiente tick, cuando la shell ya ejecutó.
             setTimeout(revisar, 0);
             return true;
           }}
